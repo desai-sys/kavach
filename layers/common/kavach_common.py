@@ -189,13 +189,17 @@ def alert_guardians(user: dict, incident_id: str, summary: str,
     c = cfg()
     template = c.get("family_alert_template", "kavach_family_alert")
     language = c.get("template_language", "en")
+    name = user.get("name") or "Your family member"
+    # v1 body reads "{{1}} {{2}}." (summary continues the name); v2 labels each field,
+    # so {{2}} must be a full sentence that starts with the name.
+    situation = f"{name} {summary}" if "v2" in template else summary
     sent = []
     for g in (guardians if guardians is not None else user.get("guardians", [])):
         if not g.get("phone"):
             continue
         try:
             wa_template(g["phone"], template, language,
-                        [user.get("name") or "your family member", summary, user.get("phone", "")],
+                        [name, situation, user.get("phone", "")],
                         [f"ACK|{incident_id}|calling", f"ACK|{incident_id}|reached"])
             sent.append(normalize_phone(g["phone"]))
         except Exception as exc:

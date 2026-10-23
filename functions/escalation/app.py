@@ -46,8 +46,9 @@ def family_escalation(incident: dict, user: dict, step: int) -> dict:
     name = user.get("name") or "Your family member"
     emails = [g["email"] for g in user.get("guardians", []) if g.get("email")]
     if step == 1:
+        earlier = incident.get("summary") or "may be in a scam"
         kc.alert_guardians(user, incident["incident_id"],
-                           f"still needs help: {incident.get('summary', 'a possible scam')}. Nobody has confirmed yet")
+                           f"still needs help and nobody has confirmed yet. Earlier alert: {name} {earlier}")
         kc.email_send(emails, f"Second alert: nobody has reached {name} yet",
                       kc.email_shell("Nobody has confirmed yet",
                                      f"<p>Kavach alerted the family 5 minutes ago and no one has tapped "
