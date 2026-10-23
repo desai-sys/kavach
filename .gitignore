@@ -6,3 +6,6 @@ samconfig.toml
 venv/
 .env
 .DS_Store
+
+# Private project notes (phone numbers, account details): keep out of the public repo
+context.md
