@@ -9,8 +9,8 @@ Example:
     --report "sbi-kyc-update.xyz:bank_kyc" --report "+919800000099:digital_arrest"
 
 The parent is marked as already consented (status=active) so you can go straight to the demo, and gets
-a demo customer record at each of the four fictional member businesses (Kalpavi Bank, Nidhira Health
-Insurance, Dawaghar Pharmacy, Chamak Home Services). To (re)load only those records, for example to
+a demo customer record at each of the five fictional member businesses (Kalpavi Bank, Nidhira Health
+Insurance, Dawaghar Pharmacy, Chamak Home Services, Dhanvi Family Clinic). To (re)load only those records, for example to
 refresh their dates before filming:
   python scripts/seed_demo.py --parent "+919800000001" --records-only
 Uses your AWS CLI credentials and the /kavach/config parameter created by the SAM stack.
@@ -41,7 +41,7 @@ def main() -> None:
     p.add_argument("--report", action="append", default=None,
                    help='"identifier:scam_type" community report to pre-load (repeatable)')
     p.add_argument("--no-business-records", action="store_true",
-                   help="Skip the demo records at the four fictional member businesses")
+                   help="Skip the demo records at the five fictional member businesses")
     p.add_argument("--records-only", action="store_true",
                    help="Only (re)load the member-business records; leave the user and reports untouched")
     args = p.parse_args()
@@ -82,7 +82,7 @@ def main() -> None:
 
 
 def seed_business_records(phone: str, name: str) -> None:
-    """Make the person a customer of all four fictional member businesses (bank, insurer, pharmacy, cleaning)."""
+    """Make the person a customer of all five fictional member businesses (bank, insurer, pharmacy, cleaning, clinic)."""
     for business_id, profile in kb.PROFILES.items():
         record = kb.demo_record(business_id, phone, name)
         kc.table("business_records_table").put_item(Item=kc.clean_for_dynamo(record))

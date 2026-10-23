@@ -1,5 +1,5 @@
 {
-  "_note": "Four FICTIONAL demo businesses. Their names, websites, sender IDs and customer records are invented for the Kavach demo and do not belong to any real company. A real member business replaces its entry with its own channels, rules and actions, and serves real records through the business-records table.",
+  "_note": "Five FICTIONAL demo businesses. Their names, websites, sender IDs and customer records are invented for the Kavach demo and do not belong to any real company. A real member business replaces its entry with its own channels, rules and actions, and serves real records through the business-records table.",
   "businesses": [
     {
       "id": "kalpavi_bank",

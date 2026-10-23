@@ -37,7 +37,7 @@ Make a real ₹1 UPI payment between two of your own accounts, screenshot the re
 Kavach reads the amount, UTR and recipient from the screenshot, sends the complaint text, emails the bank
 desk and family, alerts Ravi, and asks "Did you call 1930?" 15 minutes later.
 
-## Member businesses (the four are fictional)
+## Member businesses (all five are fictional)
 
 `seed_demo.py` gives Amma a customer record at Kalpavi Bank, Nidhira Health Insurance, Dawaghar Pharmacy
 and Chamak Home Services. After each verdict, Kavach sends that business's buttons.
@@ -65,6 +65,23 @@ Tap **Reserve my refill**.
 **9. A genuine bank SMS (expect: looks genuine; "matches Kalpavi Bank's records")**
 > VM-KLPAVI-S: Rs 2,000.00 debited from A/c XX4821 via UPI to Sri Lakshmi Kirana. Not you? Call the
 > number on the back of your card. - Kalpavi Bank
+
+## Everyday help
+
+**10. A product ad (expect: links to the real amazon.in and flipkart.com, a discount warning)**
+Screenshot any social-media ad for a branded product with a big "% OFF" and send it with:
+> Is this a good deal? I want to buy it.
+
+**11. A doctor's appointment (expect: Dr. P. Lakshmi, a list of times; tap one)**
+> I need to see a doctor for my knee pain
+
+Tap a time: Amma gets the confirmation and token, Ravi's inbox gets the email, and a reminder arrives
+2 hours before (book a slot about 2 hours 15 minutes ahead to see it during filming).
+
+**12. Food on Swiggy (only after Swiggy approves Kavach; until then use `python scripts/swiggy_dev.py`)**
+> Order 2 idli and a filter coffee from a nearby tiffin centre
+
+Kavach shows the order and total with **Place order** / **Cancel**. Orders are real and paid in cash.
 
 ## 3-minute video outline
 

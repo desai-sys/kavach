@@ -118,8 +118,9 @@ for x, label in ((PX, "PEOPLE AND BUSINESSES"), (CX, "AWS CDS CHANNELS"), (IX, "
 # people
 box(PX, TOP, PW, 96, "Amma (protected)", ["Forwards texts, links,", "screenshots, PDFs and", "Telugu voice notes"], "amma")
 box(PX, 248, PW, 96, "Ravi and family", ["Alerts with \"I'm calling\"", "buttons, emails,", "Sunday digest"], "person")
-box(PX, 364, PW, 132, "Member businesses", ["Bank, insurer, pharmacy,", "home services: share", "channels, rules and masked",
-                                            "records; get scam reports", "and call-back requests"], "business")
+box(PX, 364, PW, 132, "Member businesses", ["Bank, insurer, pharmacy,", "clinic, home services:",
+                                            "channels, rules, masked", "records; get scam reports",
+                                            "and appointments"], "business")
 box(PX, 516, PW, 100, "Owner (ops mode)", ["\"aws ...\" from WhatsApp:", "health, spend, start or", "stop EC2 after a Yes tap"], "ops")
 box(PX, 652, PW, 80, "Email forwarder", ["Forwards a suspicious", "email (optional)"], "optional")
 
@@ -157,9 +158,11 @@ box(s3, SY, SW, 196, "Guard", ["Code, after the model:", "never milder than the"
     "stage", badge=3)
 arrow([(s1 + SW, SY + 98), (s2, SY + 98)])
 arrow([(s2 + SW, SY + 98), (s3, SY + 98)])
-box(s1, SY + 212, AW - 20, 76, "Ops agent (owner only)", [
-    "Own prompt, tools and memory · view-only: instances, spend, Kavach health, templates",
-    "Can only request start, stop or reboot: the owner's Yes tap runs it"], "ops")
+HW = (AW - 20 - 15) // 2
+box(s1, SY + 212, HW, 76, "Everyday helpers", ["Store links from a photo; clinic slots;",
+                                               "Swiggy food helper. A tap books or orders"], "stage")
+box(s1 + HW + 15, SY + 212, HW, 76, "Ops agent (owner only)", ["View-only AWS tools; start, stop or",
+                                                               "reboot only after the owner's Yes"], "ops")
 MY = SY + 304
 box(s1, MY, SW, 132, "AgentCore Memory", ["Today's conversation;", "long-term facts: bank,", "past scams, family"], "stage")
 box(s2, MY, SW, 132, "AgentCore Browser", ["Opens suspicious links", "in an isolated browser;", "never fills forms"], "stage")
@@ -167,11 +170,12 @@ box(s3, MY, SW, 132, "Amazon Bedrock", ["Nova 2 Lite reads each", "screenshot an
 
 # data and control
 box(DX, TOP, DW, 178, "Amazon DynamoDB", ["users · incidents", "community scam reports", "member-business records",
-                                          "business signals", "(anonymous)", "dedupe · ops requests"], "data")
+                                          "clinic bookings", "linked accounts · signals", "pending taps (single use)"], "data")
 box(DX, 326, DW, 80, "Amazon S3", ["Media, link screenshots;", "deleted after 7 days"], "data")
 box(DX, 422, DW, 64, "SSM Parameter Store", ["/kavach/config"], "data")
 box(DX, 502, DW, 80, "Your EC2 instances", ["Started or stopped only", "after the owner's Yes"], "ops")
 box(DX, 598, DW, 54, "CloudWatch · Cost Explorer", [], "ops")
+box(DX, 668, DW, 80, "Swiggy MCP (official)", ["Food on the person's own", "account; after a tap"], "optional")
 
 # timers and follow-ups
 BY = 776
@@ -217,8 +221,8 @@ arrow([(CX + CW, 692), (IX, 692)], dashed=True)
 arrow([(IX + IW, 692), (AX + 50, 692), (AX + 50, TOP + 520)], dashed=True)
 arrow([(AX + AW, 220), (DX, 220)], both=True)
 arrow([(AX + 125, TOP + 520), (AX + 125, BY)], label="timers", label_at=(AX + 160, 700))
-arrow([(AX + AW - 60, TOP + 520), (AX + AW - 60, 740), (1635, 740), (1635, BY)], label="scam wave",
-      label_at=(1500, 734))
+arrow([(AX + AW - 60, TOP + 520), (AX + AW - 60, 760), (1635, 760), (1635, BY)], label="scam wave",
+      label_at=(AX + AW - 22, 712))
 
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
        f'font-family="{FONT}">\n<defs>\n'

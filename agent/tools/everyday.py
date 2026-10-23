@@ -1,18 +1,25 @@
-"""Everyday help, done safely: find a product on official stores, book a doctor at a member clinic.
+"""Everyday help, done safely: find a product on official stores, book a doctor at a member clinic,
+order food on Swiggy.
 
 Nothing here spends money or books anything on the model's word alone: product links only point to official
-stores, and an appointment is booked only when the person taps a time in the list Kavach sends.
+stores, an appointment is booked only when the person taps a time, and a Swiggy order is placed only when they
+tap "Place order".
 """
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 from strands import tool
 
+import food
 import kavach_business as kb
 import kavach_clinic as kclinic
+import kavach_common as kc
+import kavach_swiggy as ksw
 import shopping
 from kavach_context import current
+from kavach_memory import get_session_manager
 
 
 @tool
@@ -102,4 +109,43 @@ def cancel_appointment(which: str) -> str:
     return json.dumps({"cancelled": False, "note": "No matching upcoming appointment."})
 
 
-EVERYDAY_TOOLS = [find_product_online, find_appointment_slots, my_appointments, cancel_appointment]
+@tool
+def order_food(request: str) -> str:
+    """Order food delivery on Swiggy for the person, from their own Swiggy account: finds restaurants and dishes,
+    builds the cart, then asks them to tap "Place order" (cash on delivery). Also answers "where is my food?".
+    Kavach sends the food helper's reply to them as it is.
+
+    Args:
+        request: What they want, in their own words, e.g. "2 idli and a filter coffee from a nearby tiffin centre".
+    """
+    req = current()
+    req.actions.append("errand_food")
+    if not ksw.enabled():
+        return json.dumps({"available": False, "note": "Swiggy ordering isn't switched on in Kavach yet (it is waiting "
+                                                       "for Swiggy's approval). Suggest the Swiggy app for now."})
+    try:
+        token = ksw.access_token(req.phone)
+    except ksw.NotLinked as exc:
+        return json.dumps({"linked": False, "note": f"{exc} Ask them to send LINK SWIGGY to connect their account."})
+
+    def on_confirm(address_id: str, total, summary: str) -> dict:
+        req.food_pending = ksw.create_pending(req.phone, address_id, total, summary)
+        return req.food_pending
+
+    digits = kc.phone_digits(req.phone)
+    session = get_session_manager(f"kavach-food-session-{digits}-{datetime.now(kc.IST):%Y%m%d}", f"food-{digits}")
+    try:
+        result = food.run_turn(food.client_for(token), request, req.language, on_confirm, session)
+    except Exception as exc:
+        return json.dumps({"error": f"Swiggy could not be reached ({type(exc).__name__}). Suggest the Swiggy app."})
+    finally:
+        close = getattr(session, "close", None)
+        if callable(close):
+            close()
+    req.direct_reply = result["reply"]
+    return json.dumps({"food_helper_reply": result["reply"], "confirmation_shown": bool(result["pending"]),
+                       "note": "Kavach sends the food helper's reply to them as it is; keep your own reply short."},
+                      ensure_ascii=False)
+
+
+EVERYDAY_TOOLS = [find_product_online, find_appointment_slots, my_appointments, cancel_appointment, order_food]

@@ -29,6 +29,7 @@ import kavach_business as kb
 import kavach_clinic as kclinic
 import kavach_common as kc
 import kavach_ops as kops
+import kavach_swiggy as ksw
 
 AGENT_RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 # The agent can take 30-90 s (vision + browser); default boto3 read timeout is 60 s.
@@ -264,6 +265,24 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
         _safe_text(phone, kops.handle_tap(phone, answer, token))
         return
 
+    if kind == "FOOD" and user and user.get("status") == "active":
+        # Swiggy order: FOOD|yes|<token> places it (in the agent runtime, plain code); FOOD|no|<token> drops it.
+        answer, _, token = rest.partition("|")
+        lang = user.get("language", "en")
+        if answer == "yes":
+            _safe_text(phone, {"en": "Placing your order on Swiggy…", "te": "Swiggyలో ఆర్డర్ చేస్తున్నాను…",
+                               "hi": "Swiggy पर ऑर्डर कर रहा हूँ…"}.get(lang, "Placing your order on Swiggy…"))
+            result = call_agent(user, "", [], f"food-{token}", mode="food_confirm", extra={"token": token})
+            _safe_text(phone, (result or {}).get("reply") or kc.t("error", lang))
+        else:
+            try:
+                ksw.take_pending(phone, token)
+            except ksw.NotLinked:
+                pass
+            _safe_text(phone, {"en": "Cancelled. Nothing was ordered.", "te": "రద్దు చేశాను. ఏమీ ఆర్డర్ కాలేదు.",
+                               "hi": "रद्द कर दिया। कुछ भी ऑर्डर नहीं हुआ।"}.get(lang, "Cancelled. Nothing was ordered."))
+        return
+
     if kind in ("SLOT", "APPT") and user and user.get("status") == "active":
         # Appointment time picked (SLOT|<clinic>|<slot>) or reminder answered (APPT|going|cancel|...).
         # Plain code: the slot is booked with a conditional write, by the sender's own number.
@@ -342,6 +361,26 @@ def handle_command(phone: str, user: dict, text: str) -> bool:
         user["bank"] = text.split(maxsplit=1)[1].strip()
         kc.put_user(user)
         kc.wa_text(phone, f"✅ Bank saved: {user['bank']}.")
+        return True
+    if upper in ("LINK SWIGGY", "SWIGGY LINK", "CONNECT SWIGGY"):
+        if not ksw.enabled():
+            kc.wa_text(phone, "Swiggy ordering isn't switched on in Kavach yet. It is waiting for Swiggy's approval.")
+        else:
+            try:
+                link = ksw.start_link(phone)
+                kc.wa_text(phone, "To let Kavach order food on your Swiggy account, open this Swiggy sign-in page and "
+                                  f"log in with your phone number and OTP:\n{link}\n\nThe link works for 15 minutes. "
+                                  "Send UNLINK SWIGGY any time to disconnect.")
+            except Exception as exc:
+                print(f"Swiggy link failed: {exc!r}")
+                kc.wa_text(phone, "Sorry, I couldn't start the Swiggy sign-in right now. Please try again later.")
+        return True
+    if upper in ("UNLINK SWIGGY", "SWIGGY UNLINK", "DISCONNECT SWIGGY"):
+        try:
+            ksw.unlink(phone)
+        except Exception as exc:
+            print(f"Swiggy unlink failed: {exc!r}")
+        kc.wa_text(phone, "Done. Kavach has forgotten your Swiggy sign-in.")
         return True
     if upper.startswith("LANGUAGE"):
         kc.wa_buttons(phone, "Choose your language / భాష ఎంచుకోండి / भाषा चुनें", LANG_BUTTONS)
@@ -441,7 +480,8 @@ def build_prompt(message: dict, text: str, voice_text: str | None, media: list[d
     return "\n\n".join(parts)
 
 
-def call_agent(user: dict, prompt: str, media: list[dict], message_id: str, mode: str | None = None) -> dict | None:
+def call_agent(user: dict, prompt: str, media: list[dict], message_id: str, mode: str | None = None,
+               extra: dict | None = None) -> dict | None:
     digits = kc.phone_digits(user["phone"])
     kind = "kavach-ops-session" if mode == "ops" else "kavach-session"
     session_id = f"{kind}-{digits}-{datetime.now(kc.IST).strftime('%Y%m%d')}"  # >= 33 chars
@@ -454,6 +494,7 @@ def call_agent(user: dict, prompt: str, media: list[dict], message_id: str, mode
     }
     if mode:
         payload["mode"] = mode
+    payload.update(extra or {})
     started = time.time()
     response = AGENTCORE.invoke_agent_runtime(
         agentRuntimeArn=AGENT_RUNTIME_ARN,
