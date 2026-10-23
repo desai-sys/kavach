@@ -1,196 +1,207 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 880" width="1400" height="880" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">
-  <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0L10 5L0 10z" fill="#57534e"/>
-    </marker>
-    <marker id="arrow-out" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0L10 5L0 10z" fill="#b45309"/>
-    </marker>
-  </defs>
-  <rect width="1400" height="880" fill="#ffffff"/>
-
-  <!-- title -->
-  <text x="30" y="44" font-size="24" font-weight="700" fill="#1c1917">Kavach: WhatsApp scam shield on AWS</text>
-  <text x="30" y="70" font-size="15" fill="#57534e">Region ap-south-1 (Mumbai) · optional email checking in ap-southeast-1 (Singapore) · grey = inbound, amber = outbound</text>
-
-  <!-- column labels -->
-  <text x="30" y="104" font-size="13" font-weight="700" fill="#78716c" letter-spacing="1">PEOPLE</text>
-  <text x="300" y="104" font-size="13" font-weight="700" fill="#78716c" letter-spacing="1">AWS CDS CHANNELS</text>
-  <text x="590" y="104" font-size="13" font-weight="700" fill="#78716c" letter-spacing="1">INGEST</text>
-
-  <!-- people -->
-  <g>
-    <rect x="30" y="118" width="210" height="96" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
-    <text x="45" y="145" font-size="15" font-weight="700" fill="#1c1917">Amma (protected)</text>
-    <text x="45" y="168" font-size="12.5" fill="#44403c">Forwards texts, links,</text>
-    <text x="45" y="186" font-size="12.5" fill="#44403c">screenshots, PDFs and</text>
-    <text x="45" y="204" font-size="12.5" fill="#44403c">Telugu voice notes</text>
-  </g>
-  <g>
-    <rect x="30" y="250" width="210" height="96" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="45" y="277" font-size="15" font-weight="700" fill="#1c1917">Ravi and family</text>
-    <text x="45" y="300" font-size="12.5" fill="#44403c">WhatsApp alerts with</text>
-    <text x="45" y="318" font-size="12.5" fill="#44403c">"I'm calling" buttons,</text>
-    <text x="45" y="336" font-size="12.5" fill="#44403c">emails, Sunday digest</text>
-  </g>
-  <g>
-    <rect x="30" y="400" width="210" height="78" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="45" y="427" font-size="15" font-weight="700" fill="#1c1917">Bank fraud desk</text>
-    <text x="45" y="450" font-size="12.5" fill="#44403c">Golden-hour fraud</text>
-    <text x="45" y="468" font-size="12.5" fill="#44403c">report by email</text>
-  </g>
-  <g>
-    <rect x="30" y="540" width="210" height="78" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="45" y="567" font-size="15" font-weight="700" fill="#1c1917">Email forwarder</text>
-    <text x="45" y="590" font-size="12.5" fill="#44403c">Forwards a suspicious</text>
-    <text x="45" y="608" font-size="12.5" fill="#44403c">email (optional)</text>
-  </g>
-
-  <!-- channels -->
-  <g>
-    <rect x="300" y="118" width="220" height="150" rx="10" fill="#ecfdf5" stroke="#15803d" stroke-width="2"/>
-    <text x="315" y="145" font-size="15" font-weight="700" fill="#1c1917">End User Messaging</text>
-    <text x="315" y="165" font-size="15" font-weight="700" fill="#1c1917">Social (WhatsApp)</text>
-    <text x="315" y="190" font-size="12.5" fill="#44403c">Messages, media, buttons</text>
-    <text x="315" y="208" font-size="12.5" fill="#44403c">Templates: family alert,</text>
-    <text x="315" y="226" font-size="12.5" fill="#44403c">district scam warning</text>
-  </g>
-  <g>
-    <rect x="300" y="380" width="220" height="118" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
-    <text x="315" y="407" font-size="15" font-weight="700" fill="#1c1917">Amazon SES</text>
-    <text x="315" y="430" font-size="12.5" fill="#44403c">Family alert emails</text>
-    <text x="315" y="448" font-size="12.5" fill="#44403c">Bank fraud report</text>
-    <text x="315" y="466" font-size="12.5" fill="#44403c">Sunday family digest</text>
-  </g>
-  <g>
-    <rect x="300" y="540" width="220" height="78" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="315" y="567" font-size="15" font-weight="700" fill="#1c1917">SES email receiving</text>
-    <text x="315" y="590" font-size="12.5" fill="#44403c">Singapore · receipt rule</text>
-    <text x="315" y="608" font-size="12.5" fill="#44403c">to S3 + Lambda</text>
-  </g>
-
-  <!-- ingest -->
-  <g>
-    <rect x="590" y="118" width="220" height="62" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="605" y="144" font-size="15" font-weight="700" fill="#1c1917">Amazon SNS</text>
-    <text x="605" y="166" font-size="12.5" fill="#44403c">kavach-whatsapp-inbound</text>
-  </g>
-  <g>
-    <rect x="590" y="214" width="220" height="132" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="605" y="240" font-size="15" font-weight="700" fill="#1c1917">Inbound Lambda</text>
-    <text x="605" y="263" font-size="12.5" fill="#44403c">De-duplicate, consent,</text>
-    <text x="605" y="281" font-size="12.5" fill="#44403c">language, button taps</text>
-    <text x="605" y="299" font-size="12.5" fill="#44403c">Media to S3, voice to text</text>
-    <text x="605" y="317" font-size="12.5" fill="#44403c">Calls agent, sends reply</text>
-  </g>
-  <g>
-    <rect x="590" y="380" width="220" height="62" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="605" y="406" font-size="15" font-weight="700" fill="#1c1917">Amazon Transcribe</text>
-    <text x="605" y="428" font-size="12.5" fill="#44403c">te-IN · hi-IN · en-IN</text>
-  </g>
-  <g>
-    <rect x="590" y="540" width="220" height="78" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="605" y="567" font-size="15" font-weight="700" fill="#1c1917">Email check Lambda</text>
-    <text x="605" y="590" font-size="12.5" fill="#44403c">Parses email, asks the</text>
-    <text x="605" y="608" font-size="12.5" fill="#44403c">agent, replies by email</text>
-  </g>
-
-  <!-- AgentCore container -->
-  <g>
-    <rect x="880" y="90" width="490" height="380" rx="14" fill="#faf5ff" stroke="#7e22ce" stroke-width="2"/>
-    <text x="900" y="118" font-size="16" font-weight="700" fill="#6b21a8">Amazon Bedrock AgentCore</text>
-    <rect x="900" y="134" width="450" height="176" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
-    <text x="916" y="160" font-size="15" font-weight="700" fill="#1c1917">Runtime: Kavach agent (Strands)</text>
-    <text x="916" y="182" font-size="12.5" fill="#44403c">Amazon Nova 2 Lite on Amazon Bedrock (global profile)</text>
-    <text x="916" y="210" font-size="12.5" font-weight="700" fill="#1c1917">Investigate</text>
-    <text x="916" y="228" font-size="12.5" fill="#44403c">analyze_media · check_domain · inspect_link</text>
-    <text x="916" y="246" font-size="12.5" fill="#44403c">check_reputation · search_scam_playbooks</text>
-    <text x="916" y="272" font-size="12.5" font-weight="700" fill="#1c1917">Act</text>
-    <text x="916" y="290" font-size="12.5" fill="#44403c">alert_family · start_golden_hour · record_verdict</text>
-    <rect x="900" y="326" width="216" height="126" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
-    <text x="916" y="352" font-size="15" font-weight="700" fill="#1c1917">AgentCore Memory</text>
-    <text x="916" y="375" font-size="12.5" fill="#44403c">Today's conversation,</text>
-    <text x="916" y="393" font-size="12.5" fill="#44403c">long-term facts: bank,</text>
-    <text x="916" y="411" font-size="12.5" fill="#44403c">past scams, family</text>
-    <rect x="1134" y="326" width="216" height="126" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
-    <text x="1150" y="352" font-size="15" font-weight="700" fill="#1c1917">AgentCore Browser</text>
-    <text x="1150" y="375" font-size="12.5" fill="#44403c">Opens suspicious links</text>
-    <text x="1150" y="393" font-size="12.5" fill="#44403c">in an isolated browser,</text>
-    <text x="1150" y="411" font-size="12.5" fill="#44403c">never fills forms</text>
-  </g>
-
-  <!-- data -->
-  <g>
-    <rect x="880" y="530" width="235" height="88" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="896" y="557" font-size="15" font-weight="700" fill="#1c1917">Amazon DynamoDB</text>
-    <text x="896" y="580" font-size="12.5" fill="#44403c">users · incidents</text>
-    <text x="896" y="598" font-size="12.5" fill="#44403c">community scam reports</text>
-  </g>
-  <g>
-    <rect x="1135" y="530" width="235" height="88" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="1151" y="557" font-size="15" font-weight="700" fill="#1c1917">Amazon S3</text>
-    <text x="1151" y="580" font-size="12.5" fill="#44403c">Media, link screenshots</text>
-    <text x="1151" y="598" font-size="12.5" fill="#44403c">deleted after 7 days</text>
-  </g>
-
-  <!-- timers -->
-  <g>
-    <rect x="590" y="690" width="220" height="110" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
-    <text x="605" y="716" font-size="15" font-weight="700" fill="#1c1917">EventBridge Scheduler</text>
-    <text x="605" y="739" font-size="12.5" fill="#44403c">5-min family escalation</text>
-    <text x="605" y="757" font-size="12.5" fill="#44403c">15-min golden-hour check</text>
-    <text x="605" y="775" font-size="12.5" fill="#44403c">Sunday 9 AM IST digest</text>
-  </g>
-  <g>
-    <rect x="880" y="690" width="150" height="110" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="894" y="716" font-size="14" font-weight="700" fill="#1c1917">escalation</text>
-    <text x="894" y="739" font-size="12.5" fill="#44403c">Re-alerts family,</text>
-    <text x="894" y="757" font-size="12.5" fill="#44403c">asks "did you</text>
-    <text x="894" y="775" font-size="12.5" fill="#44403c">call 1930?"</text>
-  </g>
-  <g>
-    <rect x="1050" y="690" width="150" height="110" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="1064" y="716" font-size="14" font-weight="700" fill="#1c1917">weekly-digest</text>
-    <text x="1064" y="739" font-size="12.5" fill="#44403c">Emails each</text>
-    <text x="1064" y="757" font-size="12.5" fill="#44403c">family its week</text>
-  </g>
-  <g>
-    <rect x="1220" y="690" width="150" height="110" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
-    <text x="1234" y="716" font-size="14" font-weight="700" fill="#1c1917">community-alert</text>
-    <text x="1234" y="739" font-size="12.5" fill="#44403c">Warns a district</text>
-    <text x="1234" y="757" font-size="12.5" fill="#44403c">about a scam wave</text>
-  </g>
-  <text x="880" y="830" font-size="12.5" fill="#57534e">Lambda functions: Python 3.12 on arm64</text>
-  <text x="880" y="850" font-size="12.5" fill="#57534e">Shared settings: SSM Parameter Store /kavach/config</text>
-
-  <!-- inbound arrows (grey) -->
-  <g fill="none" stroke="#57534e" stroke-width="1.75">
-    <path d="M240 150 H296" marker-end="url(#arrow)"/>
-    <path d="M520 149 H586" marker-end="url(#arrow)"/>
-    <path d="M700 180 V210" marker-end="url(#arrow)"/>
-    <path d="M700 346 V376" marker-end="url(#arrow)"/>
-    <path d="M810 260 H896" marker-end="url(#arrow)"/>
-    <path d="M240 579 H296" marker-end="url(#arrow)"/>
-    <path d="M520 579 H586" marker-end="url(#arrow)"/>
-    <path d="M810 579 H845 V420 H876" marker-end="url(#arrow)"/>
-    <path d="M997 470 V526" marker-end="url(#arrow)"/>
-    <path d="M1252 470 V526" marker-end="url(#arrow)"/>
-    <path d="M810 745 H876" marker-end="url(#arrow)"/>
-    <path d="M1340 470 V500 H1390 V745 H1374" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
-  </g>
-  <text x="826" y="250" font-size="12" fill="#57534e">invoke</text>
-  <text x="1334" y="492" font-size="12" fill="#57534e" text-anchor="end">scam wave</text>
-
-  <!-- outbound arrows (amber) -->
-  <g fill="none" stroke="#b45309" stroke-width="1.75">
-    <path d="M880 450 H860 V490 H550 V246 H524" marker-end="url(#arrow-out)"/>
-    <path d="M550 452 H524" marker-end="url(#arrow-out)"/>
-    <path d="M296 182 H270 V182 H244" marker-end="url(#arrow-out)"/>
-    <path d="M296 240 H266 V298 H244" marker-end="url(#arrow-out)"/>
-    <path d="M296 440 H244" marker-end="url(#arrow-out)"/>
-    <path d="M296 410 H268 V330 H244" marker-end="url(#arrow-out)"/>
-    <path d="M700 690 V650 H550 V494" marker-end="url(#arrow-out)" stroke-dasharray="5 4"/>
-  </g>
-  <text x="566" y="484" font-size="12" fill="#b45309">replies, alerts, reports</text>
-  <text x="566" y="644" font-size="12" fill="#b45309">timed follow-ups</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 960" width="1760" height="960" font-family="Inter, 'Segoe UI', 'DejaVu Sans', Arial, Helvetica, sans-serif">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#57534e"/></marker>
+<marker id="arrow-out" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker>
+</defs>
+<rect width="1760" height="960" fill="#ffffff"/>
+<text x="30" y="46" font-size="25" font-weight="700" fill="#1c1917" text-anchor="start">Kavach: WhatsApp scam shield for Indian families, on AWS</text>
+<text x="30" y="74" font-size="14.5" font-weight="400" fill="#44403c" text-anchor="start">Region ap-south-1 (Mumbai) · optional email checking in ap-southeast-1 (Singapore) · grey arrows = coming in, amber = going out to people, dashed = optional or owner-only</text>
+<text x="30" y="100" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">PEOPLE AND BUSINESSES</text>
+<text x="290" y="100" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">AWS CDS CHANNELS</text>
+<text x="580" y="100" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">INGEST</text>
+<text x="850" y="100" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">AGENT</text>
+<text x="1500" y="100" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">DATA AND CONTROL</text>
+<rect x="30" y="132" width="220" height="96" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+<text x="44" y="159" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amma (protected)</text>
+<text x="44" y="183" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Forwards texts, links,</text>
+<text x="44" y="201.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">screenshots, PDFs and</text>
+<text x="44" y="219.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Telugu voice notes</text>
+<rect x="30" y="248" width="220" height="96" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="44" y="275" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Ravi and family</text>
+<text x="44" y="299" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Alerts with &quot;I&#x27;m calling&quot;</text>
+<text x="44" y="317.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">buttons, emails,</text>
+<text x="44" y="335.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Sunday digest</text>
+<rect x="30" y="364" width="220" height="132" rx="10" fill="#fff7ed" stroke="#b45309" stroke-width="2"/>
+<text x="44" y="391" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Member businesses</text>
+<text x="44" y="415" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Bank, insurer, pharmacy,</text>
+<text x="44" y="433.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">home services: share</text>
+<text x="44" y="451.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">channels, rules and masked</text>
+<text x="44" y="469.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">records; get scam reports</text>
+<text x="44" y="487.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">and call-back requests</text>
+<rect x="30" y="516" width="220" height="100" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="44" y="543" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Owner (ops mode)</text>
+<text x="44" y="567" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">&quot;aws ...&quot; from WhatsApp:</text>
+<text x="44" y="585.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">health, spend, start or</text>
+<text x="44" y="603.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">stop EC2 after a Yes tap</text>
+<rect x="30" y="652" width="220" height="80" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="44" y="679" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Email forwarder</text>
+<text x="44" y="703" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Forwards a suspicious</text>
+<text x="44" y="721.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">email (optional)</text>
+<rect x="290" y="132" width="250" height="200" rx="10" fill="#ecfdf5" stroke="#15803d" stroke-width="2"/>
+<text x="304" y="159" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">AWS End User Messaging</text>
+<text x="304" y="179" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Social (WhatsApp)</text>
+<text x="304" y="203" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Messages, media, voice notes</text>
+<text x="304" y="221.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Reply buttons: business</text>
+<text x="304" y="239.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">actions, family &quot;I&#x27;m calling&quot;,</text>
+<text x="304" y="257.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">ops Yes / Cancel</text>
+<text x="304" y="275.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Templates: family alert,</text>
+<text x="304" y="293.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">district scam warning</text>
+<rect x="290" y="364" width="250" height="196" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
+<text x="304" y="391" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon SES</text>
+<text x="304" y="415" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Family alert emails</text>
+<text x="304" y="433.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Golden-hour report to the</text>
+<text x="304" y="451.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">bank&#x27;s fraud desk</text>
+<text x="304" y="469.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Impersonation reports and</text>
+<text x="304" y="487.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">call-backs to businesses</text>
+<text x="304" y="505.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Sunday family digest</text>
+<rect x="290" y="652" width="250" height="80" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="304" y="679" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">SES email receiving</text>
+<text x="304" y="703" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Singapore · receipt rule</text>
+<text x="304" y="721.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">to S3 and Lambda</text>
+<rect x="580" y="132" width="230" height="64" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="594" y="159" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon SNS</text>
+<text x="594" y="183" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">kavach-whatsapp-inbound</text>
+<rect x="580" y="216" width="230" height="214" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="594" y="243" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Inbound Lambda</text>
+<text x="594" y="267" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">De-duplicate, consent,</text>
+<text x="594" y="285.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">language</text>
+<text x="594" y="303.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Media to S3, voice to text</text>
+<text x="594" y="321.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Business button taps run</text>
+<text x="594" y="339.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">here (no model)</text>
+<text x="594" y="357.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Ops Yes tap runs the</text>
+<text x="594" y="375.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">EC2 action</text>
+<text x="594" y="393.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Sends reply and buttons</text>
+<rect x="580" y="450" width="230" height="64" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="594" y="477" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon Transcribe</text>
+<text x="594" y="501" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">te-IN · hi-IN · en-IN</text>
+<rect x="580" y="652" width="230" height="80" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="594" y="679" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Email check Lambda</text>
+<text x="594" y="703" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Asks the agent, replies</text>
+<text x="594" y="721.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">by email</text>
+<rect x="850" y="132" width="620" height="520" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="2"/>
+<text x="866" y="160" font-size="16" font-weight="700" fill="#1c1917" text-anchor="start">Amazon Bedrock AgentCore Runtime</text>
+<text x="866" y="181" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Kavach agent (Strands) · Amazon Nova 2 Lite on Amazon Bedrock (global inference profile)</text>
+<rect x="860" y="196" width="190" height="196" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
+<circle cx="885" cy="218" r="11" fill="#6d28d9"/>
+<text x="885" y="222.5" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="900" y="223" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Evidence</text>
+<text x="874" y="247" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Code, before the model:</text>
+<text x="874" y="265.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">links, numbers, UPI IDs,</text>
+<text x="874" y="283.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">domain age, community</text>
+<text x="874" y="301.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">reports, India rules</text>
+<text x="874" y="319.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">(TRAI, NPCI, MHA),</text>
+<text x="874" y="337.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">member-business records</text>
+<text x="874" y="355.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">= verdict floor</text>
+<rect x="1065" y="196" width="190" height="196" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
+<circle cx="1090" cy="218" r="11" fill="#6d28d9"/>
+<text x="1090" y="222.5" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="1105" y="223" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Agent</text>
+<text x="1079" y="247" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Nova 2 Lite investigates:</text>
+<text x="1079" y="265.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">opens links in AgentCore</text>
+<text x="1079" y="283.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Browser, scam playbooks,</text>
+<text x="1079" y="301.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">business records</text>
+<text x="1079" y="319.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Acts: alert family, golden</text>
+<text x="1079" y="337.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">hour, business action,</text>
+<text x="1079" y="355.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">record verdict</text>
+<rect x="1270" y="196" width="190" height="196" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
+<circle cx="1295" cy="218" r="11" fill="#6d28d9"/>
+<text x="1295" y="222.5" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="1310" y="223" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Guard</text>
+<text x="1284" y="247" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Code, after the model:</text>
+<text x="1284" y="265.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">never milder than the</text>
+<text x="1284" y="283.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">verdict floor; no website</text>
+<text x="1284" y="301.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">or number Kavach didn&#x27;t</text>
+<text x="1284" y="319.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">see; one correction, then</text>
+<text x="1284" y="337.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">a safe fixed reply</text>
+<path d="M1050 294 L1065 294" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1255 294 L1270 294" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="860" y="408" width="600" height="76" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="874" y="435" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Ops agent (owner only)</text>
+<text x="874" y="459" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Own prompt, tools and memory · view-only: instances, spend, Kavach health, templates</text>
+<text x="874" y="477.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Can only request start, stop or reboot: the owner&#x27;s Yes tap runs it</text>
+<rect x="860" y="500" width="190" height="132" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
+<text x="874" y="527" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">AgentCore Memory</text>
+<text x="874" y="551" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Today&#x27;s conversation;</text>
+<text x="874" y="569.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">long-term facts: bank,</text>
+<text x="874" y="587.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">past scams, family</text>
+<rect x="1065" y="500" width="190" height="132" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
+<text x="1079" y="527" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">AgentCore Browser</text>
+<text x="1079" y="551" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Opens suspicious links</text>
+<text x="1079" y="569.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">in an isolated browser;</text>
+<text x="1079" y="587.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">never fills forms</text>
+<rect x="1270" y="500" width="190" height="132" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
+<text x="1284" y="527" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon Bedrock</text>
+<text x="1284" y="551" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Nova 2 Lite reads each</text>
+<text x="1284" y="569.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">screenshot and PDF</text>
+<text x="1284" y="587.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">&quot;notice&quot; once</text>
+<rect x="1500" y="132" width="230" height="178" rx="10" fill="#fafaf9" stroke="#57534e" stroke-width="1.5"/>
+<text x="1514" y="159" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon DynamoDB</text>
+<text x="1514" y="183" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">users · incidents</text>
+<text x="1514" y="201.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">community scam reports</text>
+<text x="1514" y="219.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">member-business records</text>
+<text x="1514" y="237.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">business signals</text>
+<text x="1514" y="255.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">(anonymous)</text>
+<text x="1514" y="273.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">dedupe · ops requests</text>
+<rect x="1500" y="326" width="230" height="80" rx="10" fill="#fafaf9" stroke="#57534e" stroke-width="1.5"/>
+<text x="1514" y="353" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon S3</text>
+<text x="1514" y="377" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Media, link screenshots;</text>
+<text x="1514" y="395.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">deleted after 7 days</text>
+<rect x="1500" y="422" width="230" height="64" rx="10" fill="#fafaf9" stroke="#57534e" stroke-width="1.5"/>
+<text x="1514" y="449" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">SSM Parameter Store</text>
+<text x="1514" y="473" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">/kavach/config</text>
+<rect x="1500" y="502" width="230" height="80" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="1514" y="529" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Your EC2 instances</text>
+<text x="1514" y="553" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Started or stopped only</text>
+<text x="1514" y="571.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">after the owner&#x27;s Yes</text>
+<rect x="1500" y="598" width="230" height="54" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="1514" y="625" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">CloudWatch · Cost Explorer</text>
+<text x="1120" y="762" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">TIMERS AND FOLLOW-UPS</text>
+<rect x="850" y="776" width="250" height="112" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="864" y="803" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">EventBridge Scheduler</text>
+<text x="864" y="827" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">5-min family escalation</text>
+<text x="864" y="845.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">15-min golden-hour check-in</text>
+<text x="864" y="863.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Sunday 9 AM IST digest</text>
+<rect x="1120" y="776" width="190" height="112" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="1134" y="803" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">escalation</text>
+<text x="1134" y="827" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Re-alerts family; asks</text>
+<text x="1134" y="845.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">&quot;did you call 1930?&quot;</text>
+<rect x="1330" y="776" width="190" height="112" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="1344" y="803" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">weekly-digest</text>
+<text x="1344" y="827" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Emails each family</text>
+<text x="1344" y="845.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">its week</text>
+<rect x="1540" y="776" width="190" height="112" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+<text x="1554" y="803" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">community-alert</text>
+<text x="1554" y="827" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Warns a district on</text>
+<text x="1554" y="845.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">WhatsApp about a</text>
+<text x="1554" y="863.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">scam wave</text>
+<path d="M1100 832 L1120 832" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M1050 888 L1050 904 L1425 904 L1425 888" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="30" y="776" width="780" height="112" rx="10" fill="#fafaf9" stroke="#e7e5e4"/>
+<text x="46" y="802" font-size="14" font-weight="600" fill="#1c1917" text-anchor="start">How a check flows</text>
+<text x="46" y="826" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Amma forwards a message on WhatsApp → SNS → Inbound Lambda (voice to text, media to S3)</text>
+<text x="46" y="844" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">→ AgentCore: 1 evidence in code, 2 Nova 2 Lite investigates and acts, 3 guard checks the reply</text>
+<text x="46" y="862" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">→ reply and business buttons on WhatsApp; family alert template; emails through SES</text>
+<text x="46" y="880" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">→ EventBridge timers escalate to family and check that 1930 was called</text>
+<text x="30" y="935" font-size="12.5" font-weight="400" fill="#78716c" text-anchor="start">Lambda functions: Python 3.12 on arm64 · shared settings in SSM /kavach/config · media deleted after 7 days · consent first, STOP turns Kavach off</text>
+<path d="M250 180 L290 180" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M540 164 L580 164" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M695.0 196 L695.0 216" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M695.0 430 L695.0 450" fill="none" stroke="#57534e" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<path d="M810 300 L850 300" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M580 290 L540 290" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arrow-out)"/>
+<path d="M850 590 L540 530" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arrow-out)"/>
+<text x="705" y="586" font-size="11.5" font-weight="600" fill="#b45309" text-anchor="middle">alerts, reports</text>
+<path d="M1150 132 L1150 114 L475.0 114 L475.0 132" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arrow-out)"/>
+<text x="705" y="127" font-size="11.5" font-weight="600" fill="#b45309" text-anchor="middle">family alert template</text>
+<path d="M290 300 L250 300" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arrow-out)"/>
+<path d="M290 400 L250 330" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arrow-out)"/>
+<path d="M290 450 L250 450" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#arrow-out)"/>
+<path d="M250 692 L290 692" fill="none" stroke="#57534e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+<path d="M540 692 L580 692" fill="none" stroke="#57534e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+<path d="M810 692 L900 692 L900 652" fill="none" stroke="#57534e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+<path d="M1470 220 L1500 220" fill="none" stroke="#57534e" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<path d="M975 652 L975 776" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="1010" y="700" font-size="11.5" font-weight="600" fill="#57534e" text-anchor="middle">timers</text>
+<path d="M1410 652 L1410 740 L1635 740 L1635 776" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="1500" y="734" font-size="11.5" font-weight="600" fill="#57534e" text-anchor="middle">scam wave</text>
 </svg>

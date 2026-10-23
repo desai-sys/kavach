@@ -205,16 +205,25 @@ def alert_guardians(user: dict, incident_id: str, summary: str,
     # so {{2}} must be a full sentence that starts with the name.
     situation = f"{name} {summary}" if "v2" in template else summary
     sent = []
+    buttons = [(f"ACK|{incident_id}|calling", "I'm calling now"), (f"ACK|{incident_id}|reached", "I've reached them")]
     for g in (guardians if guardians is not None else user.get("guardians", [])):
         if not g.get("phone"):
             continue
         try:
             wa_template(g["phone"], template, language,
                         [name, situation, user.get("phone", "")],
-                        [f"ACK|{incident_id}|calling", f"ACK|{incident_id}|reached"])
+                        [bid for bid, _title in buttons])
             sent.append(normalize_phone(g["phone"]))
         except Exception as exc:
-            print(f"Family alert to {g.get('phone')} failed: {exc!r}")
+            # Template not approved yet (or rejected): a normal message with the same buttons still reaches a
+            # guardian who has messaged Kavach in the last 24 hours.
+            print(f"Family alert template to {g.get('phone')} failed ({exc!r}); trying a normal message")
+            try:
+                wa_buttons(g["phone"], f"🚨 Kavach alert: {name} {summary}.\nTheir number: {user.get('phone', '')}\n"
+                                       "Please call them now.", buttons, header="Kavach family alert")
+                sent.append(normalize_phone(g["phone"]))
+            except Exception as exc2:
+                print(f"Family alert to {g.get('phone')} failed: {exc2!r}")
     return sent
 
 

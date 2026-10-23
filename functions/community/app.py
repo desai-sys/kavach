@@ -47,6 +47,13 @@ def handler(event, _context):
             kc.wa_template(person["phone"], template, language, [district, summary])
             sent += 1
         except Exception as exc:
-            print(f"Warning to {person['phone']} failed: {exc!r}")
+            # Template not approved yet: a normal message still reaches people who messaged in the last 24 hours.
+            try:
+                kc.wa_text(person["phone"], f"⚠️ Kavach scam warning for {district}: {summary}. "
+                                            "Don't click links, share OTPs or pay anyone. Forward anything "
+                                            "suspicious to Kavach.")
+                sent += 1
+            except Exception:
+                print(f"Warning to {person['phone']} failed: {exc!r}")
     print(f"Scam-wave warning '{scam_type}' sent to {sent} people in {district}")
     return {"sent": sent}

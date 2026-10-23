@@ -282,3 +282,18 @@ def test_inbound_lambda_sends_buttons_after_reply(monkeypatch):
     app.send_buttons(PHONE, {"buttons": [{"id": "BIZ|x|y|-", "title": "Call me back"}], "buttons_text": "Hi"})
     app.send_buttons(PHONE, {"reply": "no business"})
     assert sent == [(PHONE, "Hi", [("BIZ|x|y|-", "Call me back")])]
+
+
+def test_family_alert_falls_back_when_template_is_not_approved(monkeypatch):
+    monkeypatch.setattr(kc, "cfg", lambda: {"family_alert_template": "kavach_family_alert", "template_language": "en"})
+
+    def rejected(*_a, **_k):
+        raise RuntimeError("template not approved")
+
+    sent = []
+    monkeypatch.setattr(kc, "wa_template", rejected)
+    monkeypatch.setattr(kc, "wa_buttons", lambda to, body, buttons, header=None: sent.append((to, body, buttons)))
+    out = kc.alert_guardians(USER, "inc-7", "is on a video call with someone claiming to be CBI")
+    assert out == ["+919800000002"]
+    to, body, buttons = sent[0]
+    assert "Lakshmi Amma is on a video call" in body and buttons[0] == ("ACK|inc-7|calling", "I'm calling now")
