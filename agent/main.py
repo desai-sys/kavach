@@ -11,23 +11,34 @@ Invocation payload (sent by the inbound Lambda):
   "user": {"phone": "+91...", "name": "...", "language": "te", "district": "...", "bank": "...",
            "guardians": [{"name": "Ravi", "phone": "+91...", "email": "..."}]}
 }
-Response: {"reply": "<WhatsApp text>", "verdict": "...", "incident_id": "...", "actions": [...]}
+Response: {"reply": "<WhatsApp text>", "verdict": "...", "incident_id": "...", "actions": [...], "checks": {...}}
+
+Flow (evidence first, model second, guard last):
+  1. evidence.build()  - code reads files, extracts links/numbers/UPI IDs, runs checks and fixed rules
+  2. the agent         - explains the evidence, investigates further, takes actions
+  3. guard             - reply may not be milder than the rules, nor mention unverified contacts;
+                         one correction round, then a deterministic fallback
+  4. the verdict is always saved, even if the model forgot to call record_verdict
 """
 from __future__ import annotations
 
 import os
 import re
+import time
 from datetime import datetime
 
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 
+import evidence as ev
+import guard
 import kavach_common as kc
 from kavach_context import start_request
 from kavach_memory import get_session_manager
 from prompts import build_system_prompt
 from tools import ALL_TOOLS
+from tools.act import save_verdict
 
 # Amazon Nova 2 Lite through its global inference profile (serves Mumbai). Any Bedrock model
 # with tool use works: set KAVACH_MODEL_ID in agentcore.json envVars, e.g.
@@ -38,34 +49,75 @@ app = BedrockAgentCoreApp()
 log = app.logger
 
 
-@app.entrypoint
-def invoke(payload: dict, context=None) -> dict:
-    user = payload.get("user") or {}
-    user["phone"] = kc.normalize_phone(user.get("phone", ""))
-    req = start_request(user=user, message_id=payload.get("message_id"),
-                        channel=payload.get("channel", "whatsapp"), media=payload.get("media") or [])
-
-    digits = kc.phone_digits(user["phone"]) or "anonymous"
-    session_id = (getattr(context, "session_id", None) or payload.get("session_id")
-                  or f"kavach-session-{digits}-{datetime.now(kc.IST).strftime('%Y%m%d')}")
-    actor_id = f"user-{digits}"
-    session_manager = get_session_manager(session_id, actor_id)
-
-    agent = Agent(
+def make_agent(user: dict, channel: str, session_manager):
+    return Agent(
         # Near-greedy decoding keeps tool calls reliable.
         model=BedrockModel(model_id=MODEL_ID, max_tokens=2048, temperature=0.0),
-        system_prompt=build_system_prompt(user, req.channel),
+        system_prompt=build_system_prompt(user, channel),
         tools=ALL_TOOLS,
         session_manager=session_manager,
         callback_handler=None,
     )
+
+
+@app.entrypoint
+def invoke(payload: dict, context=None) -> dict:
+    started = time.time()
+    user = payload.get("user") or {}
+    user["phone"] = kc.normalize_phone(user.get("phone", ""))
+    req = start_request(user=user, message_id=payload.get("message_id"),
+                        channel=payload.get("channel", "whatsapp"), media=payload.get("media") or [])
+    prompt = payload.get("prompt") or "Hello"
+    checks: dict = {"retried": False, "fallback_used": False, "removed_contacts": []}
+
+    # 1. Evidence first.
     try:
-        result = agent(payload.get("prompt") or "Hello")
-        reply = _clean(str(result))
+        evidence = ev.build(prompt, req.media, user.get("phone", ""),
+                            [g.get("phone", "") for g in user.get("guardians", [])],
+                            forwarded="FORWARDED" in prompt)
+    except Exception:
+        log.exception("Evidence build failed; continuing with the model only")
+        evidence = {"red_flags": [], "genuine_signals": [], "verdict_floor": None, "identifiers": [],
+                    "suggested_actions": [], "matched_playbooks": []}
+    req.evidence = evidence
+    floor = evidence.get("verdict_floor")
+    prompt_with_sheet = f"{prompt}\n\nEVIDENCE SHEET (Kavach's own checks, run before you):\n{guard.sheet_for_model(evidence)}"
+
+    digits = kc.phone_digits(user["phone"]) or "anonymous"
+    session_id = (getattr(context, "session_id", None) or payload.get("session_id")
+                  or f"kavach-session-{digits}-{datetime.now(kc.IST).strftime('%Y%m%d')}")
+    session_manager = get_session_manager(session_id, f"user-{digits}")
+    agent = make_agent(user, req.channel, session_manager)
+
+    try:
+        # 2. The model explains and acts.
+        reply = _clean(str(agent(prompt_with_sheet)))
+
+        # 3. Guard: verdict floor and grounded contacts, with one correction round.
+        model_verdict = req.model_verdict or guard.verdict_from_reply(reply)
+        # Judge what the user will SEE (the reply's first-line emoji), not only what was recorded.
+        lenient = guard.too_lenient(guard.verdict_from_reply(reply) or model_verdict, floor)
+        bad = ev.ungrounded_contacts(reply, guard.context_text(prompt_with_sheet, agent.messages))
+        if lenient or bad:
+            log.info("Guard correction: lenient=%s bad_contacts=%s", lenient, bad)
+            checks["retried"] = True
+            correction = guard.correction_prompt(evidence, lenient, bad)
+            reply = _clean(str(agent(correction)))
+            model_verdict = req.model_verdict or guard.verdict_from_reply(reply)
+            if guard.too_lenient(guard.verdict_from_reply(reply) or model_verdict, floor):
+                reply = guard.fallback_reply(req.language, floor)
+                checks["fallback_used"] = True
+            # The correction message names the bad contacts, so it must not count as "seen" context.
+            context = guard.context_text(prompt_with_sheet, agent.messages).replace(correction, "")
+            bad = ev.ungrounded_contacts(reply, context)
+            if bad:
+                reply = guard.scrub(reply, bad)
+                checks["removed_contacts"] = bad
     except Exception as exc:
         log.exception("Agent failed")
-        reply = kc.t("error", req.language)
         req.actions.append(f"error:{type(exc).__name__}")
+        model_verdict = None
+        reply = guard.fallback_reply(req.language, floor) if floor else kc.t("error", req.language)
     finally:
         close = getattr(session_manager, "close", None)
         if callable(close):
@@ -74,7 +126,32 @@ def invoke(payload: dict, context=None) -> dict:
             except Exception:
                 log.exception("Memory flush failed")
 
-    return {"reply": reply, "verdict": req.verdict, "incident_id": req.incident_id, "actions": req.actions}
+    # 4. Always save the final verdict (never milder than the rules).
+    final = guard.final_verdict(model_verdict, floor)
+    try:
+        if req.verdict != final:
+            flags = evidence.get("red_flags", [])
+            playbooks = evidence.get("matched_playbooks") or []
+            save_verdict(final,
+                         scam_type=playbooks[0]["id"] if playbooks else "other",
+                         risk_level=max((f["severity"] for f in flags), key=ev.SEVERITY_ORDER.index, default="low"),
+                         summary=(flags[0]["finding"] if flags else prompt[:160]),
+                         identifiers=ev.identifiers_for_report(evidence),
+                         source="rules" if req.model_verdict else "kavach")
+    except Exception:
+        log.exception("Could not save the verdict")
+
+    return {
+        "reply": reply,
+        "verdict": final,
+        "model_verdict": req.model_verdict,
+        "verdict_floor": floor,
+        "red_flags": [f["rule"] for f in evidence.get("red_flags", [])],
+        "incident_id": req.incident_id,
+        "actions": req.actions,
+        "checks": {**checks, "evidence_seconds": evidence.get("seconds"),
+                   "total_seconds": round(time.time() - started, 1)},
+    }
 
 
 def _clean(text: str) -> str:
@@ -82,6 +159,7 @@ def _clean(text: str) -> str:
     text = re.sub(r"^#+\s*", "", text, flags=re.M)  # WhatsApp has no headings
     text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)  # WhatsApp bold is *single* asterisks
     text = re.sub(r"__(.+?)__", r"_\1_", text)
+    text = re.sub(r"\b[FG]\d{1,2}\b[:.]?\s?", "", text)  # never show evidence IDs
     return text.strip()
 
 

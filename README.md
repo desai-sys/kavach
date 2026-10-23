@@ -29,12 +29,40 @@ Built for the AWS Communication Developer Services (CDS) Agentic AI Partner Hack
 Region: **ap-south-1 (Mumbai)**. The optional email-checking stack runs in **ap-southeast-1 (Singapore)**,
 because SES email receiving isn't offered in Mumbai.
 
+## How Kavach avoids hallucinations: evidence first, model second, guard last
+
+A wrong "this is safe" or an invented helpline number can cost a family their savings, so Kavach doesn't let
+the model decide alone.
+
+1. **Evidence first (code, `agent/evidence.py`).** Before the model runs, code reads any image or PDF once,
+   extracts every link, phone number, UPI ID and amount with regular expressions, runs domain and
+   community-report checks in parallel, and applies fixed red-flag rules. Each rule carries a verified fact,
+   for example:
+   - *Lookalike domain*: uses a bank's or brand's name but isn't on its official-domain list.
+   - *Personal mobile for an institution*: under TRAI rules, banks must make service calls from 1600-series
+     numbers (commercial banks since 1 January 2026).
+   - *UPI PIN to receive money*: you never need a PIN or a QR scan to receive money.
+   - *Digital arrest*: an authority plus coercion (video call, "don't tell anyone", money laundering).
+   - Also: .apk files, OTP requests, screen-sharing apps, prize fees, guaranteed returns, "RBI" or "police"
+     UPI IDs, and community reports.
+   The rules produce a **verdict floor**, the mildest verdict the reply is allowed to give.
+2. **Model second.** Amazon Nova 2 Lite gets the evidence sheet, investigates further (for example by opening
+   links in AgentCore Browser), takes action, and writes the reply in the user's language.
+3. **Guard last (`agent/guard.py`).** If the reply is milder than the floor, or mentions a website or phone
+   number that appears nowhere in the user's message, the evidence or a tool result, Kavach asks the model to
+   correct itself once. If it still fails, Kavach sends a fixed safe message or removes the unverified
+   contact. The final verdict is always saved, even if the model forgot to record it.
+
+Run the tests (no AWS account or internet needed): `pip install -r requirements-dev.txt && pytest`.
+
 ## Repository layout
 
 ```
 agent/                    Kavach agent (Strands) for AgentCore Runtime
-  main.py                 entrypoint: builds the agent per request, returns {"reply", "verdict", ...}
-  prompts.py              system prompt (investigation steps, safety rules, reply format)
+  main.py                 entrypoint: evidence -> agent -> guard, returns {"reply", "verdict", ...}
+  evidence.py             extraction, parallel checks, fixed red-flag rules, verdict floor
+  guard.py                verdict-floor and grounded-contact checks, correction round, fallback
+  prompts.py              system prompt (evidence sheet, investigation steps, safety rules, reply format)
   tools/investigate.py    analyze_media, check_domain, inspect_link, check_reputation, search_scam_playbooks
   tools/act.py            alert_family, start_golden_hour, record_verdict
   playbooks.json          14 Indian scam playbooks with red flags and official facts
@@ -46,6 +74,7 @@ functions/                Lambda functions (Python 3.12, arm64)
   community/              district scam-wave WhatsApp warning
   email_inbound/          optional: check forwarded emails (Singapore stack)
 layers/common/kavach_common.py  shared WhatsApp/SES/DynamoDB helpers (Lambda layer + agent)
+tests/                    offline tests for the rules, the guard and the agent flow
 template.yaml             SAM stack for Mumbai
 email-inbound.yaml        optional SAM stack for Singapore
 scripts/                  install_agent.py, create_templates.sh, seed_demo.py, ask_agent.py, trigger_scam_wave.py

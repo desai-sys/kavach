@@ -52,7 +52,9 @@ def main() -> None:
     try:
         data = json.loads(raw)
         print(data.get("reply", raw))
-        print("\nverdict:", data.get("verdict"), "| actions:", data.get("actions"), "| incident:", data.get("incident_id"))
+        print("\nverdict:", data.get("verdict"), "| model said:", data.get("model_verdict"),
+              "| rules floor:", data.get("verdict_floor"), "| red flags:", data.get("red_flags"))
+        print("actions:", data.get("actions"), "| checks:", data.get("checks"), "| incident:", data.get("incident_id"))
     except json.JSONDecodeError:
         print(raw)
 

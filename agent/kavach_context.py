@@ -19,7 +19,10 @@ class Request:
     channel: str = "whatsapp"
     media: list = field(default_factory=list)
     incident_id: str | None = None
-    verdict: str | None = None
+    verdict: str | None = None          # last verdict saved to the incident
+    model_verdict: str | None = None    # what the model itself passed to record_verdict
+    reported: set = field(default_factory=set)  # identifiers already added to community reports
+    evidence: dict | None = None
     actions: list = field(default_factory=list)
 
     @property

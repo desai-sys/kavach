@@ -143,28 +143,42 @@ def record_verdict(verdict: str, scam_type: str, risk_level: str, summary: str,
         summary: One English sentence describing what was checked and found.
         identifiers: Scammer phone numbers, UPI IDs, account numbers and domains found (never the user's own).
     """
+    current().model_verdict = verdict.upper()
+    return json.dumps(save_verdict(verdict, scam_type, risk_level, summary, identifiers, source="agent"))
+
+
+def save_verdict(verdict: str, scam_type: str, risk_level: str, summary: str,
+                 identifiers: list[str] | None = None, source: str = "agent") -> dict:
+    """Store the verdict on the incident and add scam identifiers to the community database.
+
+    Safe to call more than once per request: each identifier is reported at most once.
+    """
     req = current()
     verdict = verdict.upper()
     req.verdict = verdict
     incident_id = req.ensure_incident("check")
-    kc.update_incident(incident_id, verdict=verdict, scam_type=scam_type, risk_level=risk_level, check_summary=summary)
+    kc.update_incident(incident_id, verdict=verdict, scam_type=scam_type, risk_level=risk_level,
+                       check_summary=summary, verdict_source=source)
 
     reported = []
     if verdict in ("SCAM", "LIKELY_SCAM"):
         from tools.investigate import _normalize_identifier  # local import avoids a cycle
 
+        own = {req.phone} | {kc.normalize_phone(g.get("phone", "")) for g in req.user.get("guardians", [])}
         expires = int(time.time()) + 90 * 24 * 3600
         for raw in identifiers or []:
             ident = _normalize_identifier(raw)
-            if not ident or ident == req.phone:
+            if not ident or ident in own or ident in req.reported:
                 continue
             kc.table("reports_table").put_item(Item=kc.clean_for_dynamo({
                 "identifier": ident, "report_id": kc.new_id("rep"), "scam_type": scam_type,
                 "district": req.user.get("district", ""), "created_at": kc.now_iso(), "expires_at": expires,
             }))
+            req.reported.add(ident)
             reported.append(ident)
-        _maybe_trigger_wave(scam_type, req.user.get("district", ""), summary)
-    return json.dumps({"recorded": True, "incident_id": incident_id, "community_reports_added": reported})
+        if reported:
+            _maybe_trigger_wave(scam_type, req.user.get("district", ""), summary)
+    return {"recorded": True, "incident_id": incident_id, "community_reports_added": reported}
 
 
 def _maybe_trigger_wave(scam_type: str, district: str, summary: str) -> None:
