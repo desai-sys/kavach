@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 from boto3.dynamodb.conditions import Key
 from strands import tool
 
+import kavach_business as kb
 import kavach_common as kc
 from kavach_context import current
 
@@ -53,7 +54,14 @@ OFFICIAL_DOMAINS = {
     "npci": ["npci.org.in"],
     "sebi": ["sebi.gov.in"],
 }
-RESTRICTED_SUFFIXES = {".bank.in": "RBI-verified bank (only real banks can register .bank.in)",
+# Kavach member businesses register their own brand names and official domains.
+BRAND_LABELS: dict[str, str] = {}
+for _profile in kb.PROFILES.values():
+    for _token in _profile["brand_tokens"]:
+        OFFICIAL_DOMAINS.setdefault(_token, _profile["official_domains"])
+        BRAND_LABELS[_token] = _profile["name"]
+
+RESTRICTED_SUFFIXES = {".bank.in":"RBI-verified bank (only real banks can register .bank.in)",
                        ".gov.in": "Government of India domain", ".nic.in": "Government (NIC) domain"}
 TWO_LEVEL_SUFFIXES = {"co.in", "org.in", "net.in", "gov.in", "nic.in", "ac.in", "edu.in", "res.in", "bank.in",
                       "firm.in", "gen.in", "ind.in", "co.uk", "com.au"}
@@ -155,13 +163,14 @@ def check_domain(url_or_domain: str) -> str:
     tokens = [tok for tok in re.split(r"[^a-z0-9]+", host) if tok]
     for brand, official in OFFICIAL_DOMAINS.items():
         if any(tok == brand or tok.startswith(brand) or tok.endswith(brand) for tok in tokens):
-            if result.get("protected_suffix"):
-                result["signals"].append(f"Mentions '{brand}' on a protected suffix; the registrant is verified.")
-            elif any(host == d or host.endswith("." + d) for d in official):
-                result["signals"].append(f"Official {brand.upper()} domain.")
+            label = BRAND_LABELS.get(brand, brand.upper())
+            if any(host == d or host.endswith("." + d) for d in official):
+                result["signals"].append(f"Official {label} domain.")
                 result["official_brand"] = brand
+            elif result.get("protected_suffix"):
+                result["signals"].append(f"Mentions '{brand}' on a protected suffix; the registrant is verified.")
             else:
-                result["signals"].append(f"LOOKALIKE: mentions '{brand}' but is not an official {brand.upper()} "
+                result["signals"].append(f"LOOKALIKE: mentions '{brand}' but is not an official {label} "
                                          f"domain (official: {', '.join(official)}).")
                 result["lookalike_of"] = brand
 

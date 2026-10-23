@@ -7,6 +7,11 @@ voice note on WhatsApp and get a clear verdict in their own language within a mi
 tap-to-confirm buttons, escalates if nobody answers, and runs a golden-hour response (1930 guidance plus
 an emailed fraud report).
 
+Businesses can join Kavach as members: a bank, insurer, pharmacy or home-services company shares its
+official channels, its rules and a masked view of each customer's record. When a message claims to come
+from a member, Kavach checks the claim against the customer's real record ("your policy lapses today" vs
+"active until March 2027") and offers one-tap buttons for the real action.
+
 Built for the AWS Communication Developer Services (CDS) Agentic AI Partner Hackathon.
 
 ![Architecture](docs/architecture.png)
@@ -22,7 +27,7 @@ Built for the AWS Communication Developer Services (CDS) Agentic AI Partner Hack
 | **AgentCore Browser** | Opens suspicious links in an isolated cloud browser and reports what the page asks for |
 | **Amazon Bedrock (Amazon Nova 2 Lite, global inference profile from Mumbai)** | Agent reasoning, plus reading screenshots and PDF "notices" |
 | **Amazon Transcribe** | Telugu (te-IN), Hindi (hi-IN) and English (en-IN) voice notes |
-| **AWS Lambda, Amazon SNS, Amazon DynamoDB, Amazon S3** | Message handling, users/incidents/community reports, media (deleted after 7 days) |
+| **AWS Lambda, Amazon SNS, Amazon DynamoDB, Amazon S3** | Message handling; users, incidents, community reports, member-business records and signals; media (deleted after 7 days) |
 | **Amazon EventBridge Scheduler** | 5-minute family escalation timers, 15-minute golden-hour check-ins, weekly digest |
 | **AWS Systems Manager Parameter Store** | One shared config (`/kavach/config`) |
 
@@ -55,6 +60,34 @@ the model decide alone.
 
 Run the tests (no AWS account or internet needed): `pip install -r requirements-dev.txt && pytest`.
 
+## Kavach for businesses: check with the business, then do the real thing
+
+Most scams impersonate a business the victim really uses: their bank, their health insurer, their pharmacy,
+the cleaning service they booked. Kavach lets any such business join as a **member** and run Kavach on its
+own WhatsApp number for its own customers. A member shares four things (`layers/common/businesses.json`):
+
+| What the business shares | What Kavach does with it |
+| --- | --- |
+| Official channels: websites, SMS sender IDs, how it takes payments | Flags lookalike sites, unofficial UPI IDs and links; recognises its genuine SMS headers |
+| Its rules: what it never does ("never takes an advance", "never cancels a policy over WhatsApp") | Fixed red flags when a message breaks them |
+| A masked slice of each customer's record (status fields plus a short summary in Telugu, Hindi and English) | Checks the message's claims against the customer's real record: "your policy will lapse today" vs "active until 31 Mar 2027, nothing due" |
+| A few safe actions | Buttons after the verdict: get the real details, request a call back, report the scam, reserve a refill, show a booking's visit code |
+
+Every one of these checks is plain code over records (`kavach_business.verify`), so it adds to the verdict
+floor and can't be hallucinated. Button taps go straight to the inbound Lambda, not through the model, and
+records are always looked up by the sender's own WhatsApp number. Each check also writes an anonymous
+signal (claims, lookalike domains, scammer identifiers, district; no customer phone numbers) to
+`kavach-business-signals` for the business's fraud-intelligence report.
+
+The demo ships with four **fictional** members, so no real company is impersonated:
+
+| Business | Kind | A scam Kavach catches with its records |
+| --- | --- | --- |
+| Kalpavi Bank | bank | "Account blocked, KYC expired": records show the account is active and KYC valid until 2028 |
+| Nidhira Health Insurance | insurer | "Policy lapses today, pay ₹14,200": the amount is real, but it's not due until 15 Mar 2027 |
+| Dawaghar Pharmacy | pharmacy | "Order on hold, pay ₹1,250": nothing is out for delivery; the next refill is ₹412, paid on delivery |
+| Chamak Home Services | home services | "Pay ₹999 advance or your slot is cancelled": the booking is confirmed and Chamak never takes advances |
+
 ## Repository layout
 
 ```
@@ -64,6 +97,7 @@ agent/                    Kavach agent (Strands) for AgentCore Runtime
   guard.py                verdict-floor and grounded-contact checks, correction round, fallback
   prompts.py              system prompt (evidence sheet, investigation steps, safety rules, reply format)
   tools/investigate.py    analyze_media, check_domain, inspect_link, check_reputation, search_scam_playbooks
+  tools/business.py       check_business_records, business_action (member businesses)
   tools/act.py            alert_family, start_golden_hour, record_verdict
   playbooks.json          14 Indian scam playbooks with red flags and official facts
   kavach-agent-policy.json  extra IAM permissions for the runtime role
@@ -73,7 +107,10 @@ functions/                Lambda functions (Python 3.12, arm64)
   digest/                 Sunday family email
   community/              district scam-wave WhatsApp warning
   email_inbound/          optional: check forwarded emails (Singapore stack)
-layers/common/kavach_common.py  shared WhatsApp/SES/DynamoDB helpers (Lambda layer + agent)
+layers/common/            shared by the Lambda layer and the agent
+  kavach_common.py        WhatsApp/SES/DynamoDB helpers
+  kavach_business.py      member businesses: claims vs records, buttons, official actions, signals
+  businesses.json         the four fictional demo members and their demo customer records
 tests/                    offline tests for the rules, the guard and the agent flow
 template.yaml             SAM stack for Mumbai
 email-inbound.yaml        optional SAM stack for Singapore
@@ -115,7 +152,9 @@ Parameters: `WhatsAppPhoneNumberId`, `AgentRuntimeArn`, `SenderEmail` and `BankF
 python scripts/seed_demo.py --parent +9198XXXXXXXX --name "Lakshmi Amma" --language te \
   --district Kurnool --bank SBI --guardian "Ravi,+9198XXXXXXXX,ravi@example.com"
 ```
-Then message the Kavach number from the parent's phone. Or test without WhatsApp:
+This also gives the parent a demo customer record at each of the four fictional member businesses
+(run it again to refresh the dates). Then message the Kavach number from the parent's phone; try the
+member-business messages in [docs/DEMO.md](docs/DEMO.md). Or test without WhatsApp:
 `python scripts/ask_agent.py --arn <ARN> --phone +9198XXXXXXXX "Is this real? Your SBI account will be blocked, update KYC at sbi-kyc-update.xyz"`
 
 ### 5. Optional: forwarded-email checking

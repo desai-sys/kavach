@@ -8,7 +8,9 @@ Example:
     --guardian "Priya,+919800000003,priya@example.com" \
     --report "sbi-kyc-update.xyz:bank_kyc" --report "+919800000099:digital_arrest"
 
-The parent is marked as already consented (status=active) so you can go straight to the demo.
+The parent is marked as already consented (status=active) so you can go straight to the demo, and gets
+a demo customer record at each of the four fictional member businesses (Kalpavi Bank, Nidhira Health
+Insurance, Dawaghar Pharmacy, Chamak Home Services). Run it again to refresh the record dates.
 Uses your AWS CLI credentials and the /kavach/config parameter created by the SAM stack.
 """
 from __future__ import annotations
@@ -19,6 +21,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "layers" / "common"))
+import kavach_business as kb  # noqa: E402
 import kavach_common as kc  # noqa: E402
 
 DEFAULT_REPORTS = ["sbi-kyc-update.xyz:bank_kyc", "refund.help.desk@ybl:upi_receive_money"]
@@ -35,6 +38,8 @@ def main() -> None:
     p.add_argument("--guardian", action="append", default=[], help='"Name,+91phone,email" (repeatable)')
     p.add_argument("--report", action="append", default=None,
                    help='"identifier:scam_type" community report to pre-load (repeatable)')
+    p.add_argument("--no-business-records", action="store_true",
+                   help="Skip the demo records at the four fictional member businesses")
     args = p.parse_args()
 
     guardians = []
@@ -62,6 +67,14 @@ def main() -> None:
                 "identifier": ident, "report_id": kc.new_id("seed"), "scam_type": scam_type,
                 "district": args.district, "created_at": kc.now_iso(), "expires_at": expires})
         print(f"Seeded community reports for {ident} ({scam_type})")
+
+    if not args.no_business_records:
+        # The parent is a customer of all four fictional member businesses (bank, insurer, pharmacy, cleaning).
+        for business_id, profile in kb.PROFILES.items():
+            record = kb.demo_record(business_id, args.parent, args.name)
+            kc.table("business_records_table").put_item(Item=kc.clean_for_dynamo(record))
+            extra = f" (visit code {record['visit_code']})" if record.get("visit_code") else ""
+            print(f"Saved demo customer record at {profile['name']}{extra}")
 
 
 if __name__ == "__main__":

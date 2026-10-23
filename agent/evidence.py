@@ -5,7 +5,9 @@ Before the model sees a message, plain code:
   2. extracts links, phone numbers, UPI IDs and amounts with regular expressions,
   3. runs the domain and community-report checks in parallel,
   4. applies fixed red-flag rules built on verified Indian facts,
-  5. computes a verdict floor: the least severe verdict the reply may give.
+  5. if the message is about a Kavach member business, checks its claims against that business's
+     published rules and the user's own record there (kavach_business.py),
+  6. computes a verdict floor: the least severe verdict the reply may give.
 
 The model then explains this evidence; main.py enforces the floor afterwards.
 """
@@ -16,9 +18,10 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import kavach_business as kb
 import kavach_common as kc
-from tools.investigate import (OFFICIAL_DOMAINS, _host_of, _normalize_identifier, _registrable, analyze_media,
-                               check_domain, check_reputation, search_scam_playbooks)
+from tools.investigate import (BRAND_LABELS, OFFICIAL_DOMAINS, _host_of, _normalize_identifier, _registrable,
+                               analyze_media, check_domain, check_reputation, search_scam_playbooks)
 
 SEVERITY_ORDER = ["low", "medium", "high", "critical"]
 VERDICT_ORDER = ["LIKELY_SAFE", "NEED_MORE_INFO", "SUSPICIOUS", "LIKELY_SCAM", "SCAM"]
@@ -92,8 +95,9 @@ INSTITUTION = ["bank", "sbi", "hdfc", "icici", "axis", "kotak", "pnb", "canara",
                "reserve bank", "kyc", "pan card", "aadhaar", "electricity", "power supply", "current bill", "discom",
                "police", "cbi", "enforcement directorate", "customs", "narcotics", "ncb", "trai", "income tax",
                "court", "india post", "fedex", "dhl", "blue dart", "courier", "epfo", "pension", "telecom",
-               "బ్యాంక్", "బ్యాంకు", "పోలీస్", "కరెంట్", "విద్యుత్", "సీబీఐ", "కస్టమ్స్", "ఆధార్",
-               "बैंक", "पुलिस", "बिजली", "सीबीआई", "कस्टम", "आधार"]
+               "insurance", "insurer", "lic",
+               "బ్యాంక్", "బ్యాంకు", "పోలీస్", "కరెంట్", "విద్యుత్", "సీబీఐ", "కస్టమ్స్", "ఆధార్", "బీమా",
+               "बैंक", "पुलिस", "बिजली", "सीबीआई", "कस्टम", "आधार", "बीमा"]
 AUTHORITY = ["police", "cbi", "enforcement directorate", "ed officer", "customs", "narcotics", "ncb", "trai",
              "court", "judge", "crime branch", "cyber cell", "supreme court", "rbi officer",
              "పోలీస్", "సీబీఐ", "కస్టమ్స్", "కోర్టు", "पुलिस", "सीबीआई", "कस्टम", "कोर्ट", "अदालत"]
@@ -153,7 +157,7 @@ def _number_given_to_call(text: str, numbers: list[str]) -> bool:
 # ----------------------------------------------------------------------------- rules
 
 def apply_rules(text: str, ex: dict, domain_checks: dict, reputation: dict, media: list,
-                forwarded: bool = False) -> tuple[list, list, list]:
+                forwarded: bool = False, business: dict | None = None) -> tuple[list, list, list]:
     """Return (red_flags, genuine_signals, suggested_actions)."""
     t = (text or "").lower()
     flags, genuine, actions = [], [], []
@@ -163,14 +167,17 @@ def apply_rules(text: str, ex: dict, domain_checks: dict, reputation: dict, medi
                       "fact": fact, "source": source})
 
     institution = _has(t, INSTITUTION)
+    if business and kb.PROFILES[business["business_id"]].get("regulated_bfsi"):
+        institution.append(business["business"])  # member banks and insurers follow the same TRAI rules
 
     for link in ex["links"]:
         dc = domain_checks.get(link["host"], {})
         brand = dc.get("lookalike_of")
         if brand:
+            label = BRAND_LABELS.get(brand, brand.upper())
             flag("lookalike_domain", "high",
-                 f"{link['host']} uses the name '{brand.upper()}' but is not an official {brand.upper()} website.",
-                 f"Official {brand.upper()} websites: {', '.join(OFFICIAL_DOMAINS.get(brand, []))}.",
+                 f"{link['host']} uses the name '{label}' but is not an official {label} website.",
+                 f"Official {label} websites: {', '.join(OFFICIAL_DOMAINS.get(brand, []))}.",
                  "Kavach official-domain list")
         age = dc.get("age_days")
         if isinstance(age, int) and age < 90:
@@ -192,7 +199,8 @@ def apply_rules(text: str, ex: dict, domain_checks: dict, reputation: dict, medi
         if dc.get("protected_suffix"):
             genuine.append(f"{link['host']} ends in a protected suffix: {dc['protected_suffix']}.")
         elif dc.get("official_brand"):
-            genuine.append(f"{link['host']} is an official {dc['official_brand'].upper()} domain.")
+            label = BRAND_LABELS.get(dc["official_brand"], dc["official_brand"].upper())
+            genuine.append(f"{link['host']} is an official {label} domain.")
         if link["url"].lower().split("?")[0].endswith(".apk"):
             flag("apk_file", "critical", f"The link {link['url']} downloads an Android app file (.apk).",
                  "Banks and government departments do not send apps as .apk files; installing one can let "
@@ -307,6 +315,29 @@ def _parse_json_loose(raw: str):
     return {"raw": raw[:2000]}
 
 
+def check_business(text: str, ex: dict, user_phone: str) -> dict | None:
+    """If the message is about a Kavach member business, check it against that business's records."""
+    try:
+        found = kb.detect(text, ex["links"], ex.get("sms_header"))
+    except Exception:
+        return None
+    if not found:
+        return None
+    business_id = found[0]["id"]
+    record, available = None, True
+    if user_phone:
+        try:
+            record = kb.get_record(business_id, user_phone)
+        except Exception:  # records unreachable: still apply the business's published rules
+            available = False
+    try:
+        check = kb.verify(business_id, record, text, ex, records_available=available)
+    except Exception:
+        return None
+    check["detected_by"] = found[0]["detected_by"]
+    return check
+
+
 def build(text: str, media: list | None = None, user_phone: str = "", guardian_phones: list | None = None,
           forwarded: bool = False) -> dict:
     """Run every deterministic check and return the evidence sheet."""
@@ -354,7 +385,13 @@ def build(text: str, media: list | None = None, user_phone: str = "", guardian_p
         dc["shortener"] = "URL shortener" in signals
         dc["ip_link"] = "raw IP address" in signals
 
-    flags, genuine, actions = apply_rules(full_text, ex, domain_results, reputation, media, forwarded)
+    business = check_business(full_text, ex, user_phone)
+    flags, genuine, actions = apply_rules(full_text, ex, domain_results, reputation, media, forwarded, business)
+    if business:
+        flags += kb.red_flags(business)
+        genuine += kb.genuine_signals(business)
+        for i, f in enumerate(flags, 1):
+            f["id"] = f"F{i}"
     try:
         playbooks = json.loads(search_scam_playbooks(full_text)).get("matches", [])
         playbooks = [{"id": p["id"], "name": p["name"], "match_score": p["match_score"]} for p in playbooks[:2]]
@@ -369,6 +406,7 @@ def build(text: str, media: list | None = None, user_phone: str = "", guardian_p
                                                                    "protected_suffix", "resolves", "error")}
                           for h, dc in domain_results.items()},
         "community_reports": {i: r for i, r in reputation.items() if r.get("reports")},
+        "business_check": business,
         "red_flags": flags,
         "genuine_signals": genuine,
         "matched_playbooks": playbooks,
@@ -419,4 +457,10 @@ def ungrounded_contacts(reply: str, context_text: str) -> list[str]:
 
 
 def identifiers_for_report(evidence: dict) -> list[str]:
-    return [_normalize_identifier(i) for i in evidence.get("identifiers", [])]
+    """Scammer identifiers worth reporting: never official or safe websites."""
+    out = []
+    for ident in evidence.get("identifiers", []):
+        norm = _normalize_identifier(ident)
+        if norm and norm not in OFFICIAL_REGISTRABLE and norm not in SAFE_DOMAINS:
+            out.append(norm)
+    return out

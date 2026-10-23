@@ -11,6 +11,7 @@ import json
 import re
 
 import evidence as ev
+import kavach_business as kb
 
 EMOJI_VERDICT = [("🚨", "LIKELY_SCAM"), ("⚠️", "SUSPICIOUS"), ("⚠", "SUSPICIOUS"), ("✅", "LIKELY_SAFE"),
                  ("❓", "NEED_MORE_INFO")]
@@ -101,7 +102,11 @@ def context_text(prompt_with_sheet: str, messages: list) -> str:
 def sheet_for_model(evidence: dict) -> str:
     keep = ["image_findings", "extracted", "domain_checks", "community_reports", "red_flags", "genuine_signals",
             "matched_playbooks", "verdict_floor", "suggested_actions"]
-    return json.dumps({k: evidence.get(k) for k in keep}, ensure_ascii=False, indent=1, default=str)
+    sheet = {k: evidence.get(k) for k in keep}
+    if evidence.get("business_check"):
+        sheet["business_check"] = kb.for_model(evidence["business_check"])
+        sheet["buttons_after_reply"] = evidence.get("buttons_after_reply") or []
+    return json.dumps(sheet, ensure_ascii=False, indent=1, default=str)
 
 
 def final_verdict(model_verdict: str | None, floor: str | None) -> str:

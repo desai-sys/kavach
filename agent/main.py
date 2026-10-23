@@ -11,14 +11,18 @@ Invocation payload (sent by the inbound Lambda):
   "user": {"phone": "+91...", "name": "...", "language": "te", "district": "...", "bank": "...",
            "guardians": [{"name": "Ravi", "phone": "+91...", "email": "..."}]}
 }
-Response: {"reply": "<WhatsApp text>", "verdict": "...", "incident_id": "...", "actions": [...], "checks": {...}}
+Response: {"reply": "<WhatsApp text>", "verdict": "...", "incident_id": "...", "actions": [...], "checks": {...},
+           "business": "...", "buttons": [{"id": "BIZ|...", "title": "..."}], "buttons_text": "..."}
 
 Flow (evidence first, model second, guard last):
-  1. evidence.build()  - code reads files, extracts links/numbers/UPI IDs, runs checks and fixed rules
+  1. evidence.build()  - code reads files, extracts links/numbers/UPI IDs, runs checks and fixed rules,
+                         and checks claims about a member business against that business's records
   2. the agent         - explains the evidence, investigates further, takes actions
   3. guard             - reply may not be milder than the rules, nor mention unverified contacts;
                          one correction round, then a deterministic fallback
   4. the verdict is always saved, even if the model forgot to call record_verdict
+  5. member business   - buttons for the real action (sent by the inbound Lambda) and an anonymous
+                         signal for the business's fraud report
 """
 from __future__ import annotations
 
@@ -33,6 +37,7 @@ from strands.models.bedrock import BedrockModel
 
 import evidence as ev
 import guard
+import kavach_business as kb
 import kavach_common as kc
 from kavach_context import start_request
 from kavach_memory import get_session_manager
@@ -81,6 +86,10 @@ def invoke(payload: dict, context=None) -> dict:
                     "suggested_actions": [], "matched_playbooks": []}
     req.evidence = evidence
     floor = evidence.get("verdict_floor")
+    business = evidence.get("business_check")
+    if business:  # tell the model which buttons the user will see after its reply
+        evidence["buttons_after_reply"] = [b["title"] for b in kb.buttons_for(
+            business["business_id"], floor or "NEED_MORE_INFO", req.language, is_customer=business["is_customer"])]
     prompt_with_sheet = f"{prompt}\n\nEVIDENCE SHEET (Kavach's own checks, run before you):\n{guard.sheet_for_model(evidence)}"
 
     digits = kc.phone_digits(user["phone"]) or "anonymous"
@@ -141,12 +150,36 @@ def invoke(payload: dict, context=None) -> dict:
     except Exception:
         log.exception("Could not save the verdict")
 
+    # 5. Member business: buttons for the real action, and an anonymous signal back to the business.
+    buttons, buttons_text = [], None
+    if business:
+        buttons = kb.buttons_for(business["business_id"], final, req.language, req.incident_id,
+                                 is_customer=business["is_customer"])
+        buttons_text = kb.buttons_text(business["business_id"], req.language)
+        scam_ids = ev.identifiers_for_report(evidence) if final in ("SCAM", "LIKELY_SCAM") else []
+        try:
+            if req.incident_id:
+                kc.update_incident(req.incident_id, business_id=business["business_id"],
+                                   business_claims=business["claims_found"], scam_identifiers=scam_ids)
+            kb.record_signal(
+                business["business_id"], "check", verdict=final, claims=business["claims_found"],
+                contradictions=[c["finding"] for c in business["contradictions"]][:5],
+                lookalike_domains=sorted({h for h, dc in evidence.get("domain_checks", {}).items()
+                                          if dc.get("lookalike_of")}),
+                scam_identifiers=scam_ids, is_customer=business["is_customer"],
+                district=user.get("district", ""), language=req.language, channel=req.channel)
+        except Exception:
+            log.exception("Could not record the business signal")
+
     return {
         "reply": reply,
         "verdict": final,
         "model_verdict": req.model_verdict,
         "verdict_floor": floor,
         "red_flags": [f["rule"] for f in evidence.get("red_flags", [])],
+        "business": business["business"] if business else None,
+        "buttons": buttons,
+        "buttons_text": buttons_text,
         "incident_id": req.incident_id,
         "actions": req.actions,
         "checks": {**checks, "evidence_seconds": evidence.get("seconds"),

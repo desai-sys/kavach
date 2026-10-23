@@ -1,0 +1,238 @@
+{
+  "_note": "Four FICTIONAL demo businesses. Their names, websites, sender IDs and customer records are invented for the Kavach demo and do not belong to any real company. A real member business replaces its entry with its own channels, rules and actions, and serves real records through the business-records table.",
+  "businesses": [
+    {
+      "id": "kalpavi_bank",
+      "name": "Kalpavi Bank",
+      "short_name": "Kalpavi",
+      "kind": "bank",
+      "regulated_bfsi": true,
+      "aliases": ["kalpavi bank", "kalpavi", "కల్పవి బ్యాంక్", "కల్పవి", "कल्पवि बैंक", "कल्पवि"],
+      "brand_tokens": ["kalpavi"],
+      "official_domains": ["kalpavi.bank.in"],
+      "sms_headers": ["KLPAVI"],
+      "official_upi_ids": [],
+      "how_you_pay": "Kalpavi Bank never collects money through UPI IDs, QR codes or links sent in messages; payments happen only in the Kalpavi app or at a branch",
+      "never": [
+        "asks for an OTP, UPI PIN, CVV or password",
+        "sends links to update KYC or PAN (KYC is updated only in the Kalpavi app or at a branch)",
+        "blocks an account over WhatsApp or SMS without a branch notice",
+        "asks you to install screen-sharing or other apps",
+        "calls from personal mobile numbers (it calls only from 1600-series numbers)"
+      ],
+      "policies": {},
+      "callback_hours": 2,
+      "desk_email": "",
+      "actions": [
+        {"id": "status", "kind": "summary", "title": {"en": "My account status", "te": "నా ఖాతా వివరాలు", "hi": "मेरे खाते का हाल"}},
+        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
+        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+      ],
+      "demo_record": {
+        "status": {
+          "account": "XX4821",
+          "account_active": true,
+          "kyc_complete": true,
+          "kyc_valid_until": "2028-03-31",
+          "amount_due_now": 0,
+          "refund_pending": false,
+          "transactions": [
+            {"date": "{iso:today-1}", "amount": 2000, "type": "debit", "detail": "UPI to Sri Lakshmi Kirana"},
+            {"date": "{iso:today-6}", "amount": 15000, "type": "credit", "detail": "pension"}
+          ]
+        },
+        "summary": {
+          "en": [
+            "Savings account XX4821: active. No block or freeze.",
+            "KYC complete, valid until 31 Mar 2028.",
+            "Nothing is due on your account.",
+            "Recent transactions: ₹2,000 debit on {today-1} (UPI to Sri Lakshmi Kirana), ₹15,000 pension credit on {today-6}."
+          ],
+          "te": [
+            "సేవింగ్స్ ఖాతా XX4821: యాక్టివ్‌గా ఉంది. ఎలాంటి బ్లాక్ లేదా ఫ్రీజ్ లేదు.",
+            "KYC పూర్తయింది, 31 Mar 2028 వరకు చెల్లుతుంది.",
+            "మీ ఖాతాపై ఎలాంటి బకాయి లేదు.",
+            "ఇటీవలి లావాదేవీలు: {today-1}న ₹2,000 డెబిట్ (Sri Lakshmi Kiranaకు UPI), {today-6}న ₹15,000 పెన్షన్ జమ."
+          ],
+          "hi": [
+            "बचत खाता XX4821: सक्रिय है। कोई ब्लॉक या फ़्रीज़ नहीं।",
+            "KYC पूरा है, 31 Mar 2028 तक मान्य।",
+            "आपके खाते पर कुछ भी बकाया नहीं है।",
+            "हाल के लेन-देन: {today-1} को ₹2,000 डेबिट (Sri Lakshmi Kirana को UPI), {today-6} को ₹15,000 पेंशन जमा।"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nidhira_health",
+      "name": "Nidhira Health Insurance",
+      "short_name": "Nidhira",
+      "kind": "insurer",
+      "regulated_bfsi": true,
+      "aliases": ["nidhira health insurance", "nidhira health", "nidhira insurance", "nidhira", "నిధిరా హెల్త్", "నిధిర హెల్త్", "నిధిరా", "निधिरा हेल्थ", "निधिरा"],
+      "brand_tokens": ["nidhira"],
+      "official_domains": ["nidhirahealth.in"],
+      "sms_headers": ["NIDHIR"],
+      "official_upi_ids": [],
+      "how_you_pay": "Nidhira collects premiums only in the Nidhira app, at nidhirahealth.in or by an auto-debit you set up, never through UPI IDs or links sent in messages",
+      "never": [
+        "asks for an OTP, PIN or password",
+        "cancels or lapses a policy over WhatsApp or SMS without a written notice",
+        "asks for a fee to release a bonus, refund or claim",
+        "calls from personal mobile numbers (it calls only from 1600-series numbers)"
+      ],
+      "policies": {},
+      "callback_hours": 4,
+      "desk_email": "",
+      "actions": [
+        {"id": "policy", "kind": "summary", "title": {"en": "My real policy", "te": "నా అసలు పాలసీ", "hi": "मेरी असली पॉलिसी"}},
+        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
+        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+      ],
+      "demo_record": {
+        "status": {
+          "policy": "NHI-2025-004471",
+          "policy_active": true,
+          "active_until": "2027-03-31",
+          "kyc_complete": true,
+          "amount_due_now": 0,
+          "last_paid_amount": 14200,
+          "last_paid_on": "2026-03-14",
+          "next_due_date": "2027-03-15",
+          "next_due_amount": 14200,
+          "refund_pending": false
+        },
+        "summary": {
+          "en": [
+            "Health policy NHI-2025-004471 (family floater, ₹5,00,000 cover): active until 31 Mar 2027.",
+            "Last premium ₹14,200 paid on 14 Mar 2026. Next premium ₹14,200 due on 15 Mar 2027. Nothing is due now.",
+            "No refund, bonus or claim payment is pending."
+          ],
+          "te": [
+            "ఆరోగ్య పాలసీ NHI-2025-004471 (ఫ్యామిలీ ఫ్లోటర్, ₹5,00,000 కవరేజ్): 31 Mar 2027 వరకు యాక్టివ్‌గా ఉంది.",
+            "చివరి ప్రీమియం ₹14,200, 14 Mar 2026న చెల్లించారు. తదుపరి ప్రీమియం ₹14,200, 15 Mar 2027న కట్టాలి. ఇప్పుడు ఏమీ బకాయి లేదు.",
+            "ఎలాంటి రిఫండ్, బోనస్ లేదా క్లెయిమ్ చెల్లింపు పెండింగ్‌లో లేదు."
+          ],
+          "hi": [
+            "स्वास्थ्य पॉलिसी NHI-2025-004471 (फ़ैमिली फ़्लोटर, ₹5,00,000 कवर): 31 Mar 2027 तक सक्रिय।",
+            "पिछला प्रीमियम ₹14,200, 14 Mar 2026 को भरा गया। अगला प्रीमियम ₹14,200, 15 Mar 2027 को देय है। अभी कुछ भी बकाया नहीं है।",
+            "कोई रिफंड, बोनस या क्लेम भुगतान बाकी नहीं है।"
+          ]
+        }
+      }
+    },
+    {
+      "id": "dawaghar",
+      "name": "Dawaghar Pharmacy",
+      "short_name": "Dawaghar",
+      "kind": "pharmacy",
+      "regulated_bfsi": false,
+      "aliases": ["dawaghar pharmacy", "dawaghar", "దవాఘర్", "दवाघर"],
+      "brand_tokens": ["dawaghar"],
+      "official_domains": ["dawaghar.in"],
+      "sms_headers": ["DAWAGR"],
+      "official_upi_ids": [],
+      "how_you_pay": "You pay Dawaghar in its app, or in cash or UPI to the delivery person after you receive your medicines",
+      "never": [
+        "asks for payment before delivery through links or UPI IDs in messages",
+        "asks for OTPs or card details",
+        "delivers prescription medicines without a valid prescription"
+      ],
+      "policies": {"no_advance_payment": true},
+      "callback_hours": 2,
+      "desk_email": "",
+      "actions": [
+        {"id": "refill", "kind": "refill", "title": {"en": "Reserve my refill", "te": "రీఫిల్ రిజర్వ్", "hi": "रीफ़िल रिज़र्व करें"}},
+        {"id": "orders", "kind": "summary", "title": {"en": "My medicines", "te": "నా మందులు", "hi": "मेरी दवाइयाँ"}},
+        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
+        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+      ],
+      "demo_record": {
+        "status": {
+          "amount_due_now": 0,
+          "next_due_date": "{iso:today+5}",
+          "next_due_amount": 412,
+          "refill_item": "Metformin 500 mg, 60 tablets",
+          "refill_due": "{iso:today+5}",
+          "refill_amount": 412,
+          "refill_reserved": false,
+          "order_out_for_delivery": false,
+          "refund_pending": false
+        },
+        "summary": {
+          "en": [
+            "Next refill: Metformin 500 mg, 60 tablets, due {today+5}. About ₹412, paid on delivery.",
+            "Last order delivered on {today-25} and paid on delivery.",
+            "No order is out for delivery right now, and nothing is due."
+          ],
+          "te": [
+            "తదుపరి రీఫిల్: Metformin 500 mg, 60 మాత్రలు, {today+5}కి. సుమారు ₹412, డెలివరీ సమయంలో చెల్లించాలి.",
+            "చివరి ఆర్డర్ {today-25}న డెలివరీ అయింది, డెలివరీ సమయంలో చెల్లించారు.",
+            "ప్రస్తుతం డెలివరీకి ఎలాంటి ఆర్డర్ బయలుదేరలేదు, ఏమీ బకాయి లేదు."
+          ],
+          "hi": [
+            "अगला रीफ़िल: Metformin 500 mg, 60 गोलियाँ, {today+5} को। लगभग ₹412, डिलीवरी पर भुगतान।",
+            "पिछला ऑर्डर {today-25} को डिलीवर हुआ, भुगतान डिलीवरी पर हुआ।",
+            "अभी कोई ऑर्डर डिलीवरी के लिए नहीं निकला है और कुछ भी बकाया नहीं है।"
+          ]
+        }
+      }
+    },
+    {
+      "id": "chamak_home",
+      "name": "Chamak Home Services",
+      "short_name": "Chamak",
+      "kind": "home_services",
+      "regulated_bfsi": false,
+      "aliases": ["chamak home services", "chamak home", "chamak", "చమక్ హోమ్", "చమక్", "चमक होम"],
+      "brand_tokens": ["chamak"],
+      "official_domains": ["chamakhome.in"],
+      "sms_headers": ["CHAMAK"],
+      "official_upi_ids": [],
+      "how_you_pay": "You pay Chamak in the Chamak app only after the job is done",
+      "never": [
+        "asks for an advance, a booking fee or a slot-confirmation fee",
+        "asks you to pay a professional's personal UPI ID",
+        "sends a professional who doesn't know the visit code in your booking"
+      ],
+      "policies": {"no_advance_payment": true},
+      "callback_hours": 1,
+      "desk_email": "",
+      "actions": [
+        {"id": "booking", "kind": "booking", "title": {"en": "Check my booking", "te": "నా బుకింగ్ చూపించు", "hi": "मेरी बुकिंग देखें"}},
+        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
+        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+      ],
+      "demo_record": {
+        "status": {
+          "booking_status": "confirmed",
+          "booking_at": "{iso:next_saturday}T10:00",
+          "service": "Deep cleaning (2BHK)",
+          "price": 2499,
+          "amount_due_now": 0,
+          "advance_paid": 0,
+          "refund_pending": false,
+          "professional": "Suresh K."
+        },
+        "summary": {
+          "en": [
+            "Booking: Deep cleaning (2BHK) on {next_saturday}, 10:00 AM. Confirmed.",
+            "Price ₹2,499, paid in the Chamak app after the job. No advance is needed.",
+            "Professional: Suresh K. (ID verified)."
+          ],
+          "te": [
+            "బుకింగ్: {next_saturday}, ఉదయం 10:00కి డీప్ క్లీనింగ్ (2BHK). నిర్ధారించబడింది.",
+            "ధర ₹2,499, పని పూర్తయ్యాక చమక్ యాప్‌లో చెల్లించాలి. అడ్వాన్స్ అవసరం లేదు.",
+            "ప్రొఫెషనల్: Suresh K. (ID ధృవీకరించబడింది)."
+          ],
+          "hi": [
+            "बुकिंग: {next_saturday}, सुबह 10:00 बजे डीप क्लीनिंग (2BHK)। कन्फ़र्म।",
+            "कीमत ₹2,499, काम पूरा होने के बाद चमक ऐप में भुगतान। कोई एडवांस नहीं लगता।",
+            "प्रोफ़ेशनल: Suresh K. (ID सत्यापित)।"
+          ]
+        },
+        "visit_code": "{visit_code}"
+      }
+    }
+  ]
+}

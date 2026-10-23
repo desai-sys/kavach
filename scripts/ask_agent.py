@@ -55,6 +55,8 @@ def main() -> None:
         print("\nverdict:", data.get("verdict"), "| model said:", data.get("model_verdict"),
               "| rules floor:", data.get("verdict_floor"), "| red flags:", data.get("red_flags"))
         print("actions:", data.get("actions"), "| checks:", data.get("checks"), "| incident:", data.get("incident_id"))
+        if data.get("buttons"):
+            print(f"buttons ({data.get('business')}):", " | ".join(b["title"] for b in data["buttons"]))
     except json.JSONDecodeError:
         print(raw)
 

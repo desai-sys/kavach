@@ -5,9 +5,11 @@ End User Messaging Social -> SNS -> this Lambda.
 For every customer message it:
   1. de-duplicates (SNS can deliver twice),
   2. runs onboarding (language, consent, guardians) if needed,
-  3. handles button taps (family "I'm calling" / "I've reached her", golden-hour check-ins),
+  3. handles button taps (family "I'm calling" / "I've reached her", golden-hour check-ins,
+     member-business actions such as "My real policy" or "Report this scam"),
   4. otherwise fetches media to S3, transcribes voice notes, calls the Kavach agent
-     on AgentCore Runtime and sends the agent's reply back on WhatsApp.
+     on AgentCore Runtime and sends the agent's reply back on WhatsApp, followed by the
+     member business's buttons when the message was about one.
 """
 from __future__ import annotations
 
@@ -21,6 +23,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
+import kavach_business as kb
 import kavach_common as kc
 
 AGENT_RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
@@ -152,6 +155,19 @@ def process_message(message: dict, profile_name: str | None) -> None:
     result = call_agent(user, prompt, media, message_id)
     reply = (result or {}).get("reply") or kc.t("error", lang)
     kc.wa_text(phone, reply)
+    send_business_buttons(phone, result)
+
+
+def send_business_buttons(phone: str, result: dict | None) -> None:
+    """If the message was about a member business, offer its official actions as tap-to-reply buttons."""
+    buttons = (result or {}).get("buttons") or []
+    if not buttons:
+        return
+    try:
+        kc.wa_buttons(phone, result.get("buttons_text") or "What would you like to do?",
+                      [(b["id"], b["title"]) for b in buttons])
+    except Exception as exc:  # the verdict already went out; buttons are a bonus
+        print(f"Business buttons not sent: {exc!r}")
 
 
 # =========================================================================== onboarding & buttons
@@ -210,6 +226,14 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
             }.get(lang, ""))
             if user:
                 kc.alert_guardians(user, incident_id, "needs help reporting a payment fraud to 1930 right now")
+        return
+
+    if kind == "BIZ" and user and user.get("status") == "active":
+        # Member-business action: BIZ|<business_id>|<action_id>|<incident_id or ->. Plain code, no model call;
+        # records are looked up by the sender's own number, never by the payload.
+        business_id, _, tail = rest.partition("|")
+        action_id, _, incident_id = tail.partition("|")
+        kb.perform_action(user, business_id, action_id, incident_id or None)
         return
 
     print(f"Unknown choice {choice!r} from {phone}")

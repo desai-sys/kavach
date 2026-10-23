@@ -140,6 +140,34 @@ Resources:
       KeySchema: [{AttributeName: message_id, KeyType: HASH}]
       TimeToLiveSpecification: {AttributeName: expires_at, Enabled: true}
 
+  # Member businesses: each customer's masked record (status + short summary), keyed by business and phone.
+  BusinessRecordsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-business-records
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: business_id, AttributeType: S}
+        - {AttributeName: phone, AttributeType: S}
+      KeySchema:
+        - {AttributeName: business_id, KeyType: HASH}
+        - {AttributeName: phone, KeyType: RANGE}
+      SSESpecification: {SSEEnabled: true}
+
+  # Anonymous events for each business's fraud-intelligence report (no customer phone numbers).
+  BusinessSignalsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-business-signals
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: business_id, AttributeType: S}
+        - {AttributeName: signal_id, AttributeType: S}
+      KeySchema:
+        - {AttributeName: business_id, KeyType: HASH}
+        - {AttributeName: signal_id, KeyType: RANGE}
+      TimeToLiveSpecification: {AttributeName: expires_at, Enabled: true}
+
   # ------------------------------------------------------------------ one config for everything
   ConfigParameter:
     Type: AWS::SSM::Parameter
@@ -153,6 +181,8 @@ Resources:
           "incidents_table": "${IncidentsTable}",
           "reports_table": "${ReportsTable}",
           "dedupe_table": "${DedupeTable}",
+          "business_records_table": "${BusinessRecordsTable}",
+          "business_signals_table": "${BusinessSignalsTable}",
           "media_bucket": "${MediaBucket}",
           "whatsapp_phone_number_id": "${WhatsAppPhoneNumberId}",
           "meta_api_version": "${MetaApiVersion}",
@@ -187,6 +217,8 @@ Resources:
         - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
         - DynamoDBCrudPolicy: {TableName: !Ref IncidentsTable}
         - DynamoDBCrudPolicy: {TableName: !Ref DedupeTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref BusinessRecordsTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref BusinessSignalsTable}
         - S3CrudPolicy: {BucketName: !Ref MediaBucket}
         - SSMParameterReadPolicy: {ParameterName: kavach/*}
         - Statement:

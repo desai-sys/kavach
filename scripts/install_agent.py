@@ -6,8 +6,8 @@ Usage:
     python scripts/install_agent.py ../KavachAgent --agent Kavach
 
 What it does:
-  1. copies agent/ and layers/common/kavach_common.py into <project>/app/<agent>/
-     (replacing the generated main.py),
+  1. copies agent/ and the shared layers/common files (kavach_common.py, kavach_business.py,
+     businesses.json) into <project>/app/<agent>/ (replacing the generated main.py),
   2. adds playwright to the agent's pyproject.toml (for AgentCore Browser),
   3. adds kavach-agent-policy.json and KAVACH_CONFIG_PARAM to the runtime in agentcore.json.
 Then run `agentcore deploy` inside the project.
@@ -47,7 +47,8 @@ def main() -> None:
             shutil.copytree(item, target, ignore=shutil.ignore_patterns("__pycache__"))
         else:
             shutil.copy2(item, target)
-    shutil.copy2(REPO / "layers" / "common" / "kavach_common.py", app_dir / "kavach_common.py")
+    for shared in ("kavach_common.py", "kavach_business.py", "businesses.json"):
+        shutil.copy2(REPO / "layers" / "common" / shared, app_dir / shared)
     print(f"Copied agent code into {app_dir}")
 
     # 2. dependencies

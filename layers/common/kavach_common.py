@@ -47,7 +47,8 @@ def client(name: str, region: str | None = None):
 
 @lru_cache(maxsize=None)
 def table(key: str):
-    """key is one of: users_table, incidents_table, reports_table, dedupe_table."""
+    """key is one of: users_table, incidents_table, reports_table, dedupe_table,
+    business_records_table, business_signals_table."""
     return boto3.resource("dynamodb", region_name=cfg()["region"]).Table(cfg()[key])
 
 
