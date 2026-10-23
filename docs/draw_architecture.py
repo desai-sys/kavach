@@ -159,8 +159,8 @@ box(s3, SY, SW, 196, "Guard", ["Code, after the model:", "never milder than the"
 arrow([(s1 + SW, SY + 98), (s2, SY + 98)])
 arrow([(s2 + SW, SY + 98), (s3, SY + 98)])
 HW = (AW - 20 - 15) // 2
-box(s1, SY + 212, HW, 76, "Everyday helpers", ["Store links from a photo; clinic slots;",
-                                               "Swiggy food helper. A tap books or orders"], "stage")
+box(s1, SY + 212, HW, 76, "Everyday helpers", ["Store links from a product photo;",
+                                               "clinic slots: the person's tap books"], "stage")
 box(s1 + HW + 15, SY + 212, HW, 76, "Ops agent (owner only)", ["View-only AWS tools; start, stop or",
                                                                "reboot only after the owner's Yes"], "ops")
 MY = SY + 304
@@ -170,12 +170,11 @@ box(s3, MY, SW, 132, "Amazon Bedrock", ["Nova 2 Lite reads each", "screenshot an
 
 # data and control
 box(DX, TOP, DW, 178, "Amazon DynamoDB", ["users · incidents", "community scam reports", "member-business records",
-                                          "clinic bookings", "linked accounts · signals", "pending taps (single use)"], "data")
+                                          "clinic bookings", "business signals", "pending taps (single use)"], "data")
 box(DX, 326, DW, 80, "Amazon S3", ["Media, link screenshots;", "deleted after 7 days"], "data")
 box(DX, 422, DW, 64, "SSM Parameter Store", ["/kavach/config"], "data")
 box(DX, 502, DW, 80, "Your EC2 instances", ["Started or stopped only", "after the owner's Yes"], "ops")
 box(DX, 598, DW, 54, "CloudWatch · Cost Explorer", [], "ops")
-box(DX, 668, DW, 80, "Swiggy MCP (official)", ["Food on the person's own", "account; after a tap"], "optional")
 
 # timers and follow-ups
 BY = 776

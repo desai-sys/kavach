@@ -39,10 +39,8 @@ from strands.models.bedrock import BedrockModel
 
 import evidence as ev
 import guard
-import food
 import kavach_business as kb
 import kavach_common as kc
-import kavach_swiggy as ksw
 import ops
 from kavach_context import start_request
 from kavach_memory import get_session_manager
@@ -74,8 +72,6 @@ def make_agent(user: dict, channel: str, session_manager):
 def invoke(payload: dict, context=None) -> dict:
     if payload.get("mode") == "ops":  # owner-only AWS console; separate prompt, tools and memory
         return ops.invoke(payload, context)
-    if payload.get("mode") == "food_confirm":  # the person tapped "Place order": plain code, no model
-        return food.confirm_order(payload)
     started = time.time()
     user = payload.get("user") or {}
     user["phone"] = kc.normalize_phone(user.get("phone", ""))
@@ -110,15 +106,12 @@ def invoke(payload: dict, context=None) -> dict:
     try:
         # 2. The model explains and acts.
         reply = _clean(str(agent(prompt_with_sheet)))
+
+        # 3. Guard: verdict floor and grounded contacts, with one correction round.
         model_verdict = req.model_verdict or guard.verdict_from_reply(reply)
-        if req.direct_reply and not floor:
-            # An everyday helper (food on Swiggy) answered from its own tools; send its words as they are.
-            reply, lenient, bad = req.direct_reply, False, []
-        else:
-            # 3. Guard: verdict floor and grounded contacts, with one correction round.
-            # Judge what the user will SEE (the reply's first-line emoji), not only what was recorded.
-            lenient = guard.too_lenient(guard.verdict_from_reply(reply) or model_verdict, floor)
-            bad = ev.ungrounded_contacts(reply, guard.context_text(prompt_with_sheet, agent.messages))
+        # Judge what the user will SEE (the reply's first-line emoji), not only what was recorded.
+        lenient = guard.too_lenient(guard.verdict_from_reply(reply) or model_verdict, floor)
+        bad = ev.ungrounded_contacts(reply, guard.context_text(prompt_with_sheet, agent.messages))
         if lenient or bad:
             log.info("Guard correction: lenient=%s bad_contacts=%s", lenient, bad)
             checks["retried"] = True
@@ -166,9 +159,7 @@ def invoke(payload: dict, context=None) -> dict:
 
     # 5. Member business: buttons for the real action, and an anonymous signal back to the business.
     buttons, buttons_text = [], None
-    if req.food_pending:  # "Place order" / "Cancel" for a Swiggy order
-        buttons_text, buttons = ksw.confirm_prompt(req.food_pending, req.language)
-    elif business and not req.list_message:
+    if business and not req.list_message:
         buttons = kb.buttons_for(business["business_id"], final, req.language, req.incident_id,
                                  is_customer=business["is_customer"])
         buttons_text = kb.buttons_text(business["business_id"], req.language)

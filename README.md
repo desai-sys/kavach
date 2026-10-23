@@ -98,11 +98,6 @@ booking anything on the AI's word alone: the person's own tap does that.
 | --- | --- | --- |
 | A photo or ad of a product ("is this a good deal?", "buy this") | Reads the product from the picture and replies with search links on the real amazon.in and flipkart.com; flags 70%+ discounts from sellers it can't verify | Links only: neither store offers an ordering API to outside apps, and Amazon's Product Advertising API 5.0 is deprecated |
 | "I need a doctor for my knee pain" | Picks the right doctor at the member clinic, sends a WhatsApp list of free times; the tap books it (a conditional write, so nobody gets the same slot), confirms on WhatsApp, emails the family through SES, and EventBridge sends a reminder with "I'm on my way" / "Cancel visit" | Fully working with the fictional Dhanvi Family Clinic; a real clinic joins as a member |
-| "Order 2 idli and a coffee" | A food helper uses Swiggy's official MCP server on the person's own Swiggy account: restaurants, menu, cart, total. The order is placed (cash on delivery, up to Swiggy's ₹1000 cap) only when they tap **Place order**; the AI never gets the place-order tool | Built to Swiggy's developer docs. Live on WhatsApp once Swiggy approves Kavach's redirect URI (`SwiggyEnabled=true`); try it now on your own account with `python scripts/swiggy_dev.py` |
-
-To switch Swiggy on: apply at [mcp.swiggy.com/builders/access](https://mcp.swiggy.com/builders/access/) with the
-`SwiggyRedirectUri` stack output, then redeploy with `SwiggyEnabled=true`. People link their account by sending
-`LINK SWIGGY` and signing in on Swiggy's own page with phone and OTP; `UNLINK SWIGGY` forgets the tokens.
 
 ## Ops mode: run the deployment from WhatsApp (owner only)
 
@@ -133,9 +128,7 @@ agent/                    Kavach agent (Strands) for AgentCore Runtime
   prompts.py              system prompt (evidence sheet, investigation steps, safety rules, reply format)
   tools/investigate.py    analyze_media, check_domain, inspect_link, check_reputation, search_scam_playbooks
   tools/business.py       check_business_records, business_action (member businesses)
-  tools/everyday.py       find_product_online, find_appointment_slots, my_appointments, cancel_appointment,
-                          order_food
-  food.py                 Swiggy food helper (official Swiggy MCP); places an order only after the person's tap
+  tools/everyday.py       find_product_online, find_appointment_slots, my_appointments, cancel_appointment
   shopping.py             official store links from a product in a photo or ad
   ops.py, tools/ops.py    owner-only ops mode: list_instances, aws_spend_this_month, kavach_status, aws_read,
                           request_instance_action
@@ -148,19 +141,16 @@ functions/                Lambda functions (Python 3.12, arm64)
   digest/                 Sunday family email
   community/              district scam-wave WhatsApp warning
   email_inbound/          optional: check forwarded emails (Singapore stack)
-  swiggy_link/            Swiggy sign-in callback (Lambda function URL)
 layers/common/            shared by the Lambda layer and the agent
   kavach_common.py        WhatsApp/SES/DynamoDB helpers
   kavach_business.py      member businesses: claims vs records, buttons, official actions, signals
   businesses.json         the five fictional demo members and their demo customer records
   kavach_ops.py           ops mode: owner check, Yes/Cancel requests, runs the confirmed EC2 action
   kavach_clinic.py        clinic slots, booking (no double booking), confirmations, reminders
-  kavach_swiggy.py        Swiggy sign-in (OAuth 2.1 + PKCE), token refresh, single-use order confirmations
 tests/                    offline tests for the rules, the guard and the agent flow
 template.yaml             SAM stack for Mumbai
 email-inbound.yaml        optional SAM stack for Singapore
-scripts/                  install_agent.py, create_templates.sh, seed_demo.py, ask_agent.py, trigger_scam_wave.py,
-                          swiggy_dev.py (Swiggy developer mode on your own account)
+scripts/                  install_agent.py, create_templates.sh, seed_demo.py, ask_agent.py, trigger_scam_wave.py
 docs/                     architecture diagram (draw_architecture.py redraws it), demo kit, website
 ```
 
@@ -191,8 +181,7 @@ sam build
 sam deploy --guided --region ap-south-1 --capabilities CAPABILITY_NAMED_IAM
 ```
 Parameters: `WhatsAppPhoneNumberId`, `AgentRuntimeArn`, `SenderEmail` and `BankFraudDeskEmail`
-(both SES-verified). Optional: `OpsOwnerPhones` (your number, to turn on ops mode), `OpsRegions`, and `SwiggyEnabled` (leave `false`
-until Swiggy approves the `SwiggyRedirectUri` output). Then, in the End User Messaging Social console, set the WhatsApp Business Account's
+(both SES-verified). Optional: `OpsOwnerPhones` (your number, to turn on ops mode) and `OpsRegions`. Then, in the End User Messaging Social console, set the WhatsApp Business Account's
 **event destination** to the `InboundTopicArn` output.
 
 ### 4. Try it

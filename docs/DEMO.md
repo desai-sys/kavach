@@ -78,11 +78,6 @@ Screenshot any social-media ad for a branded product with a big "% OFF" and send
 Tap a time: Amma gets the confirmation and token, Ravi's inbox gets the email, and a reminder arrives
 2 hours before (book a slot about 2 hours 15 minutes ahead to see it during filming).
 
-**12. Food on Swiggy (only after Swiggy approves Kavach; until then use `python scripts/swiggy_dev.py`)**
-> Order 2 idli and a filter coffee from a nearby tiffin centre
-
-Kavach shows the order and total with **Place order** / **Cancel**. Orders are real and paid in cash.
-
 ## 3-minute video outline
 
 | Time | Scene | What judges should notice |

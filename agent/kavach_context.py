@@ -26,8 +26,6 @@ class Request:
     actions: list = field(default_factory=list)
     ops_pending: dict | None = None     # ops mode: the one start/stop/reboot waiting for the owner's Yes
     list_message: dict | None = None    # a WhatsApp list (e.g. appointment times) to send after the reply
-    food_pending: dict | None = None    # a Swiggy order waiting for the person's "Place order" tap
-    direct_reply: str | None = None     # an everyday helper's answer, sent as is
 
     @property
     def phone(self) -> str:

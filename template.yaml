@@ -37,11 +37,6 @@ Parameters:
     Type: String
     Default: ""
     Description: "Optional. Comma-separated WhatsApp numbers (e.g. +9198XXXXXXXX) allowed to use 'aws ...' ops mode. Empty turns ops mode off."
-  SwiggyEnabled:
-    Type: String
-    Default: "false"
-    AllowedValues: ["true", "false"]
-    Description: "Set to true once Swiggy has approved the SwiggyRedirectUri output for Kavach"
   OpsRegions:
     Type: String
     Default: ap-south-1
@@ -167,20 +162,6 @@ Resources:
         - {AttributeName: phone, KeyType: RANGE}
       SSESpecification: {SSEEnabled: true}
 
-  # Linked accounts (Swiggy OAuth tokens), one item per person and provider. Never sent to the model.
-  LinkedAccountsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: kavach-linked-accounts
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - {AttributeName: phone, AttributeType: S}
-        - {AttributeName: provider, AttributeType: S}
-      KeySchema:
-        - {AttributeName: phone, KeyType: HASH}
-        - {AttributeName: provider, KeyType: RANGE}
-      SSESpecification: {SSEEnabled: true}
-
   # Member clinics: one item per booked appointment slot. Conditional writes stop double booking.
   BookingsTable:
     Type: AWS::DynamoDB::Table
@@ -224,9 +205,6 @@ Resources:
           "business_records_table": "${BusinessRecordsTable}",
           "business_signals_table": "${BusinessSignalsTable}",
           "bookings_table": "${BookingsTable}",
-          "linked_accounts_table": "${LinkedAccountsTable}",
-          "swiggy_enabled": "${SwiggyEnabled}",
-          "swiggy_redirect_uri": "${SwiggyLinkFunctionUrl.FunctionUrl}callback",
           "media_bucket": "${MediaBucket}",
           "whatsapp_phone_number_id": "${WhatsAppPhoneNumberId}",
           "meta_api_version": "${MetaApiVersion}",
@@ -266,7 +244,6 @@ Resources:
         - DynamoDBCrudPolicy: {TableName: !Ref BusinessRecordsTable}
         - DynamoDBCrudPolicy: {TableName: !Ref BusinessSignalsTable}
         - DynamoDBCrudPolicy: {TableName: !Ref BookingsTable}
-        - DynamoDBCrudPolicy: {TableName: !Ref LinkedAccountsTable}
         - S3CrudPolicy: {BucketName: !Ref MediaBucket}
         - SSMParameterReadPolicy: {ParameterName: kavach/*}
         - Statement:
@@ -361,41 +338,6 @@ Resources:
               Action: [social-messaging:SendWhatsAppMessage]
               Resource: "*"
 
-  # Swiggy sign-in callback (OAuth redirect). Public URL; the single-use state ties it to a person.
-  SwiggyLinkFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: kavach-swiggy-link
-      CodeUri: functions/swiggy_link/
-      Handler: app.handler
-      Timeout: 30
-      FunctionUrlConfig:
-        AuthType: NONE
-      Policies:
-        - DynamoDBCrudPolicy: {TableName: !Ref LinkedAccountsTable}
-        - DynamoDBCrudPolicy: {TableName: !Ref DedupeTable}
-        - SSMParameterReadPolicy: {ParameterName: kavach/*}
-        - Statement:
-            - Effect: Allow
-              Action: [social-messaging:SendWhatsAppMessage]
-              Resource: "*"
-
-  # Public function URLs need both permissions (Lambda change, October 2025).
-  SwiggyLinkUrlPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunctionUrl
-      FunctionName: !Ref SwiggyLinkFunction
-      Principal: "*"
-      FunctionUrlAuthType: NONE
-  SwiggyLinkInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref SwiggyLinkFunction
-      Principal: "*"
-      InvokedViaFunctionUrl: true
-
   # ------------------------------------------------------------------ timers
   SchedulerRole:
     Type: AWS::IAM::Role
@@ -427,6 +369,3 @@ Outputs:
     Value: !Ref MediaBucket
   ConfigParameter:
     Value: !Ref ConfigParameter
-  SwiggyRedirectUri:
-    Description: "Give this to Swiggy (mcp.swiggy.com/builders/access) as Kavach's OAuth redirect URI"
-    Value: !Sub "${SwiggyLinkFunctionUrl.FunctionUrl}callback"

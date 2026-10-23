@@ -117,8 +117,8 @@
 <path d="M1255 294 L1270 294" fill="none" stroke="#57534e" stroke-width="2" marker-end="url(#arrow)"/>
 <rect x="860" y="408" width="292" height="76" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-width="1.5"/>
 <text x="874" y="435" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Everyday helpers</text>
-<text x="874" y="459" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Store links from a photo; clinic slots;</text>
-<text x="874" y="477.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Swiggy food helper. A tap books or orders</text>
+<text x="874" y="459" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Store links from a product photo;</text>
+<text x="874" y="477.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">clinic slots: the person&#x27;s tap books</text>
 <rect x="1167" y="408" width="292" height="76" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5" stroke-dasharray="6 4"/>
 <text x="1181" y="435" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Ops agent (owner only)</text>
 <text x="1181" y="459" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">View-only AWS tools; start, stop or</text>
@@ -144,7 +144,7 @@
 <text x="1514" y="201.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">community scam reports</text>
 <text x="1514" y="219.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">member-business records</text>
 <text x="1514" y="237.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">clinic bookings</text>
-<text x="1514" y="255.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">linked accounts · signals</text>
+<text x="1514" y="255.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">business signals</text>
 <text x="1514" y="273.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">pending taps (single use)</text>
 <rect x="1500" y="326" width="230" height="80" rx="10" fill="#fafaf9" stroke="#57534e" stroke-width="1.5"/>
 <text x="1514" y="353" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Amazon S3</text>
@@ -159,10 +159,6 @@
 <text x="1514" y="571.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">after the owner&#x27;s Yes</text>
 <rect x="1500" y="598" width="230" height="54" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5" stroke-dasharray="6 4"/>
 <text x="1514" y="625" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">CloudWatch · Cost Explorer</text>
-<rect x="1500" y="668" width="230" height="80" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
-<text x="1514" y="695" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">Swiggy MCP (official)</text>
-<text x="1514" y="719" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">Food on the person&#x27;s own</text>
-<text x="1514" y="737.0" font-size="12.5" font-weight="400" fill="#44403c" text-anchor="start">account; after a tap</text>
 <text x="1120" y="762" font-size="12.5" font-weight="700" fill="#78716c" text-anchor="start" letter-spacing="1">TIMERS AND FOLLOW-UPS</text>
 <rect x="850" y="776" width="250" height="112" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
 <text x="864" y="803" font-size="15" font-weight="600" fill="#1c1917" text-anchor="start">EventBridge Scheduler</text>
