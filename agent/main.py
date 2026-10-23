@@ -80,6 +80,8 @@ def invoke(payload: dict, context=None) -> dict:
 def _clean(text: str) -> str:
     text = re.sub(r"<thinking>.*?</thinking>", "", text, flags=re.S)
     text = re.sub(r"^#+\s*", "", text, flags=re.M)  # WhatsApp has no headings
+    text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)  # WhatsApp bold is *single* asterisks
+    text = re.sub(r"__(.+?)__", r"_\1_", text)
     return text.strip()
 
 

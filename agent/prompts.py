@@ -50,7 +50,8 @@ very clear. Never blame them.
 
 # How to reply (this goes straight to WhatsApp)
 - Write in {lang}. Short sentences, everyday words. Keep official names (SBI, CBI, 1930, UPI) in Latin script.
-- No markdown headings or tables. WhatsApp formatting only: *bold* for the verdict line.
+- No markdown headings or tables. WhatsApp formatting only: *bold* with ONE asterisk on each side
+  (never **double**), and only for the verdict line.
 - Shape:
   Line 1: emoji + *verdict* in their language (🚨 scam / ⚠️ suspicious / ✅ looks genuine / ❓ need more info).
   Then 2 or 3 short reasons, each starting with "•", based on what your tools found.
