@@ -1,0 +1,19 @@
+{
+  "name": "kavach_scam_warning",
+  "language": "en",
+  "category": "UTILITY",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Scam warning for your area"
+    },
+    {
+      "type": "BODY",
+      "text": "Kavach has received several reports from {{1}} today about this: {{2}}. Do not call numbers or open links in such messages, and forward anything suspicious to Kavach.",
+      "example": {
+        "body_text": [["Kurnool", "fake electricity disconnection messages asking you to call an officer"]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "kavach_family_alert",
+  "language": "en",
+  "category": "UTILITY",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Kavach safety alert"
+    },
+    {
+      "type": "BODY",
+      "text": "Kavach alert: {{1}} {{2}}.\n\nPlease call them now on {{3}}, then tap a button below so Kavach knows someone is helping.",
+      "example": {
+        "body_text": [["Lakshmi Amma", "is on a video call with someone claiming to be from the CBI and is being asked to transfer money", "+919876543210"]]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {"type": "QUICK_REPLY", "text": "I'm calling now"},
+        {"type": "QUICK_REPLY", "text": "I've reached them"}
+      ]
+    }
+  ]
+}

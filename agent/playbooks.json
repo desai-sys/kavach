@@ -1,0 +1,142 @@
+[
+  {
+    "id": "digital_arrest",
+    "name": "Digital arrest (fake police / CBI / ED / customs on a video call)",
+    "keywords": ["digital arrest", "cbi", "ed", "enforcement directorate", "ncb", "narcotics", "police", "customs", "trai", "money laundering", "aadhaar misused", "arrest warrant", "video call", "skype", "supreme court", "rbi verification", "safe account", "don't tell anyone", "case registered", "fir", "interrogation", "court order"],
+    "how_it_works": "A caller poses as police, CBI, ED, NCB, customs or TRAI. They say your Aadhaar, SIM or a parcel is linked to a crime, show fake warrants or ID cards, keep you on a video call for hours, tell you not to tell family, and ask you to move money to a 'verification' or 'RBI safe' account.",
+    "red_flags": ["Threat of immediate arrest", "Video call with someone in uniform or a fake police station background", "Told to stay on the call and keep it secret", "Asked to transfer money 'for verification' or to 'clear your name'", "Official-looking warrant or letter sent on WhatsApp"],
+    "official_facts": ["'Digital arrest' has no basis in Indian law. No police or agency arrests or interrogates people over a video call.", "No agency asks you to transfer money to prove innocence.", "Real summons are served in person or by post, not on WhatsApp."],
+    "what_to_do": ["Disconnect the call now. You are not under arrest.", "Do not transfer any money or share bank details.", "Call a family member, then call 1930 or report at cybercrime.gov.in."],
+    "severity": "critical"
+  },
+  {
+    "id": "courier_parcel",
+    "name": "Courier or parcel scam (FedEx, DHL, Blue Dart, India Post)",
+    "keywords": ["fedex", "dhl", "blue dart", "bluedart", "india post", "indiapost", "parcel", "courier", "package", "shipment", "drugs", "mdma", "seized", "redelivery", "address incomplete", "delivery failed", "customs duty"],
+    "how_it_works": "A message or call says your parcel is held: either it 'contains drugs or passports' (then the call is transferred to fake police, leading to a digital arrest), or it needs a small 'redelivery' or 'address update' fee paid through a link that steals card details.",
+    "red_flags": ["A parcel you never sent", "Call transferred to 'police' or 'customs'", "Small fee via a link", "Link domain is not the courier's official site"],
+    "official_facts": ["Courier companies do not transfer you to police.", "India Post does not ask for redelivery fees through SMS links."],
+    "what_to_do": ["Do not press 1 or follow the call transfer.", "Track parcels only on the courier's official website or app.", "Do not enter card details on links from messages."],
+    "severity": "high"
+  },
+  {
+    "id": "electricity_disconnection",
+    "name": "Electricity disconnection threat",
+    "keywords": ["electricity", "power", "current bill", "disconnect", "disconnected tonight", "9:30 pm", "electricity officer", "light bill", "bijli", "discom", "apspdcl", "bescom", "msedcl", "update bill"],
+    "how_it_works": "A message says your power will be cut tonight because the last bill was 'not updated'. It gives a personal mobile number of an 'electricity officer' who asks you to install an app or pay a small amount, then takes over the phone or steals bank details.",
+    "red_flags": ["Deadline of tonight", "Sent from a personal 10-digit mobile number", "Asked to call an 'officer' or install an app"],
+    "official_facts": ["Electricity companies do not send disconnection threats from personal mobile numbers.", "Bills can be checked on the official discom website or app."],
+    "what_to_do": ["Do not call the number or install any app.", "Check your bill on the official discom app or website.", "Block and report the number on Sanchar Saathi (Chakshu)."],
+    "severity": "high"
+  },
+  {
+    "id": "bank_kyc",
+    "name": "Bank KYC / account-blocked scam",
+    "keywords": ["kyc", "pan update", "account blocked", "account will be blocked", "account suspended", "yono", "net banking", "reward points", "redeem points", "credit card points", "update pan", "sbi", "hdfc", "icici", "axis", "kotak", "pnb", "canara", "bank of baroda", "otp", "debit card blocked"],
+    "how_it_works": "A message claims your bank account, YONO or card will be blocked unless you update KYC/PAN or redeem reward points through a link. The link is a fake bank page that captures your login, card number and OTP.",
+    "red_flags": ["Threat that the account will be blocked today", "Link that is not the bank's official domain", "Asks for OTP, PIN, CVV or full card number", "APK file to install"],
+    "official_facts": ["Banks never ask for OTP, PIN, CVV or passwords by message or call.", "Banks do not ask you to update KYC through SMS or WhatsApp links.", "Indian banks are moving to the exclusive '.bank.in' domain, which only RBI-verified banks can register."],
+    "what_to_do": ["Do not click the link or share any OTP.", "Call the number printed on the back of your card or visit your branch.", "If you entered details, call your bank to block the card and call 1930."],
+    "severity": "high"
+  },
+  {
+    "id": "upi_receive_money",
+    "name": "UPI 'enter PIN to receive money' / QR / refund scam",
+    "keywords": ["upi", "collect request", "request money", "scan qr", "qr code", "receive money", "sent by mistake", "wrong transfer", "refund", "cashback", "upi pin", "gpay", "phonepe", "paytm", "approve request"],
+    "how_it_works": "Someone says they sent you money by mistake or are paying for something you sold, then sends a QR code or a 'collect request'. Scanning or approving it and entering your UPI PIN sends money out of your account.",
+    "red_flags": ["Asked to enter UPI PIN to receive money", "Pressure to approve a request quickly", "Screenshot of a payment you can't see in your bank app"],
+    "official_facts": ["You never need to enter your UPI PIN or scan a QR code to RECEIVE money.", "Entering the UPI PIN always means money is leaving your account."],
+    "what_to_do": ["Decline the request. Do not enter your PIN.", "Check your bank balance in the bank's own app, not a screenshot."],
+    "severity": "high"
+  },
+  {
+    "id": "investment_trading",
+    "name": "Investment / stock-tips / trading app scam",
+    "keywords": ["stock tips", "trading", "ipo", "share market", "guaranteed returns", "double money", "crypto", "bitcoin", "usdt", "investment group", "telegram group", "whatsapp group", "vip group", "institutional account", "profit", "withdrawal blocked", "tax to withdraw", "sebi registered"],
+    "how_it_works": "You are added to a WhatsApp or Telegram 'stock tips' group, then asked to install a trading app that shows fake profits. Withdrawals are blocked until you pay 'tax' or 'fees'. These scams caused about three-quarters of cyber-fraud losses in India in 2025.",
+    "red_flags": ["Guaranteed or very high returns", "Unknown app not on official stores", "Must pay to withdraw your own money", "Group admins posing as SEBI-registered advisers"],
+    "official_facts": ["SEBI-registered advisers can be checked on the SEBI website.", "No genuine broker asks you to pay fees before withdrawing your money."],
+    "what_to_do": ["Stop sending money, even to 'unlock' withdrawals.", "Exit the group and report it.", "Report at cybercrime.gov.in or call 1930 with all payment details."],
+    "severity": "high"
+  },
+  {
+    "id": "task_job",
+    "name": "Part-time job / task scam",
+    "keywords": ["part time job", "work from home", "like videos", "youtube like", "rate hotels", "google review", "daily income", "earn per day", "task", "prepaid task", "merchant task", "telegram job", "hr from"],
+    "how_it_works": "An 'HR' message offers easy money for liking videos or rating hotels. Small payments arrive first to build trust, then you are asked to deposit money for 'prepaid' or 'merchant' tasks that never pay out.",
+    "red_flags": ["Unsolicited job offer on WhatsApp or Telegram", "Pay to earn", "Earnings shown only on a website you can't withdraw from"],
+    "official_facts": ["Genuine employers do not ask you to pay to get work."],
+    "what_to_do": ["Do not deposit any money.", "Block the sender and report on cybercrime.gov.in."],
+    "severity": "medium"
+  },
+  {
+    "id": "remote_access_apk",
+    "name": "APK file or screen-sharing app scam",
+    "keywords": ["apk", ".apk", "install app", "anydesk", "teamviewer", "quicksupport", "screen share", "rustdesk", "download this app", "wedding invitation apk", "challan apk", "pm kisan apk", "support app"],
+    "how_it_works": "You are sent an .apk file (for example a 'wedding invitation', 'RTO challan' or 'PM Kisan' app) or asked to install a screen-sharing app. Once installed it reads your SMS OTPs or lets the scammer control your phone and empty your bank account.",
+    "red_flags": ["An .apk file sent on WhatsApp", "Asked to install AnyDesk, TeamViewer or similar", "Asked to give an app permission to read SMS"],
+    "official_facts": ["Government departments and banks do not send apps as .apk files on WhatsApp."],
+    "what_to_do": ["Do not open or install the file.", "If installed, turn on flight mode, uninstall it, and call your bank and 1930."],
+    "severity": "critical"
+  },
+  {
+    "id": "fake_customer_care",
+    "name": "Fake customer-care number",
+    "keywords": ["customer care", "helpline", "toll free", "complaint number", "refund form", "found number on google", "airline refund", "irctc refund", "amazon refund", "flipkart refund", "executive"],
+    "how_it_works": "A fake helpline number listed online or sent in a message offers to fix a refund or complaint, then asks you to fill a 'refund form', share an OTP, or install a screen-sharing app.",
+    "red_flags": ["Helpline number from a search ad or social media comment", "Asks for OTP or app install to process a refund"],
+    "official_facts": ["Get helpline numbers only from the company's official app or website."],
+    "what_to_do": ["Hang up. Contact the company through its official app.", "Do not share OTPs or install apps."],
+    "severity": "medium"
+  },
+  {
+    "id": "lottery_prize",
+    "name": "Lottery / KBC / prize scam",
+    "keywords": ["lottery", "kbc", "kaun banega crorepati", "lucky draw", "prize", "won", "winner", "25 lakh", "car prize", "processing fee", "gst on prize", "gift"],
+    "how_it_works": "A message says you won a lottery, KBC prize or lucky draw and must pay a processing fee, GST or 'income tax' to claim it.",
+    "red_flags": ["Prize for a contest you never entered", "Fee required to receive the prize"],
+    "official_facts": ["Genuine prizes never require you to pay a fee first."],
+    "what_to_do": ["Do not pay anything. Block and report the sender."],
+    "severity": "medium"
+  },
+  {
+    "id": "family_impersonation",
+    "name": "Family emergency / voice-clone impersonation",
+    "keywords": ["mom", "papa", "beta", "accident", "hospital", "urgent money", "new number", "my phone is broken", "police caught your son", "your son arrested", "voice", "help me", "send money immediately"],
+    "how_it_works": "A caller or message from a new number claims to be a relative (sometimes with an AI-cloned voice) or says your child has been arrested or hurt, and asks for money urgently.",
+    "red_flags": ["New or unknown number", "Extreme urgency", "Asked not to call anyone else"],
+    "official_facts": ["Police do not demand money over the phone to release someone."],
+    "what_to_do": ["Hang up and call the family member on their known number.", "Agree on a family code word for emergencies."],
+    "severity": "high"
+  },
+  {
+    "id": "fake_buyer_army",
+    "name": "Fake buyer or 'army officer' marketplace scam",
+    "keywords": ["olx", "quikr", "marketplace", "army officer", "army", "crpf", "transfer", "posting", "advance payment", "i will pay", "buyer", "seller", "rent house"],
+    "how_it_works": "Someone posing as an army or CRPF officer offers to buy your item or rent your house, then asks you to send a small amount first or scan a QR code 'to receive' their payment.",
+    "red_flags": ["Buyer agrees without seeing the item", "You are asked to pay to receive money", "Army ID card photo sent as proof"],
+    "official_facts": ["You never pay money to receive a payment."],
+    "what_to_do": ["Accept payment only into your account without entering any PIN.", "Do not scan QR codes from buyers."],
+    "severity": "medium"
+  },
+  {
+    "id": "traffic_challan",
+    "name": "Fake traffic e-challan",
+    "keywords": ["challan", "e-challan", "traffic fine", "rto", "parivahan", "vehicle fine", "overspeeding", "pay fine"],
+    "how_it_works": "A message says you have a traffic fine and links to a lookalike payment page or an .apk file.",
+    "red_flags": ["Link is not on the official parivahan.gov.in site", "APK file attached"],
+    "official_facts": ["Official e-challans are checked and paid on echallan.parivahan.gov.in."],
+    "what_to_do": ["Check the challan only on the official Parivahan site.", "Do not install apps from the message."],
+    "severity": "medium"
+  },
+  {
+    "id": "pension_epfo",
+    "name": "Pension / EPFO / life-certificate scam targeting seniors",
+    "keywords": ["pension", "pension stopped", "life certificate", "jeevan pramaan", "epfo", "pf withdrawal", "uan", "dearness allowance", "pensioner", "treasury"],
+    "how_it_works": "A caller says your pension will stop unless you update your life certificate or bank details, and asks for an OTP or Aadhaar details.",
+    "red_flags": ["Threat that pension stops today", "Asks for OTP, Aadhaar or bank details on a call"],
+    "official_facts": ["Life certificates are submitted through Jeevan Pramaan, your bank branch or authorised centres, not by sharing OTPs on calls."],
+    "what_to_do": ["Do not share OTPs. Confirm with your bank branch or pension office directly."],
+    "severity": "high"
+  }
+]

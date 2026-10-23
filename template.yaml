@@ -1,0 +1,298 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Kavach - WhatsApp scam shield for Indian families. Messaging backend: WhatsApp inbound
+  handling, escalation timers, weekly digest and scam-wave warnings. Deploy in ap-south-1.
+
+Parameters:
+  WhatsAppPhoneNumberId:
+    Type: String
+    Description: "Phone number ID from the End User Messaging Social console (looks like phone-number-id-0123...)"
+  AgentRuntimeArn:
+    Type: String
+    Description: "ARN of the Kavach agent (from `agentcore status`)"
+  SenderEmail:
+    Type: String
+    Description: "SES-verified address Kavach sends from"
+  BankFraudDeskEmail:
+    Type: String
+    Description: "Where golden-hour fraud reports go. For the demo, a verified inbox you control."
+  MetaApiVersion:
+    Type: String
+    Default: v20.0
+  FamilyAlertTemplate:
+    Type: String
+    Default: kavach_family_alert
+  ScamWarningTemplate:
+    Type: String
+    Default: kavach_scam_warning
+  TemplateLanguage:
+    Type: String
+    Default: en
+  WaveThreshold:
+    Type: Number
+    Default: 3
+    Description: "Reports of one scam type in one district within 24h that trigger a district warning"
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [arm64]
+    Timeout: 60
+    MemorySize: 512
+    Layers: [!Ref CommonLayer]
+    Environment:
+      Variables:
+        KAVACH_CONFIG_PARAM: /kavach/config
+        KAVACH_REGION: !Ref AWS::Region
+
+Resources:
+  # ------------------------------------------------------------------ shared code
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: kavach-common
+      ContentUri: layers/common/
+      CompatibleRuntimes: [python3.12]
+      CompatibleArchitectures: [arm64]
+    Metadata:
+      BuildMethod: python3.12
+      BuildArchitecture: arm64
+
+  # ------------------------------------------------------------------ WhatsApp events
+  InboundTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: kavach-whatsapp-inbound
+
+  InboundTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [!Ref InboundTopic]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowEndUserMessagingSocial
+            Effect: Allow
+            Principal:
+              Service: [social-messaging.amazonaws.com]
+            Action: sns:Publish
+            Resource: !Ref InboundTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+
+  # ------------------------------------------------------------------ storage
+  MediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub kavach-media-${AWS::AccountId}-${AWS::Region}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteMediaAfter7Days
+            Status: Enabled
+            ExpirationInDays: 7
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [{AttributeName: phone, AttributeType: S}]
+      KeySchema: [{AttributeName: phone, KeyType: HASH}]
+
+  IncidentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-incidents
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [{AttributeName: incident_id, AttributeType: S}]
+      KeySchema: [{AttributeName: incident_id, KeyType: HASH}]
+
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-reports
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: identifier, AttributeType: S}
+        - {AttributeName: report_id, AttributeType: S}
+      KeySchema:
+        - {AttributeName: identifier, KeyType: HASH}
+        - {AttributeName: report_id, KeyType: RANGE}
+      TimeToLiveSpecification: {AttributeName: expires_at, Enabled: true}
+
+  DedupeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-dedupe
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: [{AttributeName: message_id, AttributeType: S}]
+      KeySchema: [{AttributeName: message_id, KeyType: HASH}]
+      TimeToLiveSpecification: {AttributeName: expires_at, Enabled: true}
+
+  # ------------------------------------------------------------------ one config for everything
+  ConfigParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /kavach/config
+      Type: String
+      Value: !Sub |
+        {
+          "region": "${AWS::Region}",
+          "users_table": "${UsersTable}",
+          "incidents_table": "${IncidentsTable}",
+          "reports_table": "${ReportsTable}",
+          "dedupe_table": "${DedupeTable}",
+          "media_bucket": "${MediaBucket}",
+          "whatsapp_phone_number_id": "${WhatsAppPhoneNumberId}",
+          "meta_api_version": "${MetaApiVersion}",
+          "from_email": "${SenderEmail}",
+          "bank_fraud_email": "${BankFraudDeskEmail}",
+          "family_alert_template": "${FamilyAlertTemplate}",
+          "scam_warning_template": "${ScamWarningTemplate}",
+          "template_language": "${TemplateLanguage}",
+          "wave_threshold": ${WaveThreshold},
+          "escalation_function_arn": "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:kavach-escalation",
+          "scheduler_role_arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/kavach-scheduler-role",
+          "community_function_name": "kavach-community-alert"
+        }
+
+  # ------------------------------------------------------------------ functions
+  InboundFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: kavach-inbound
+      CodeUri: functions/inbound/
+      Handler: app.handler
+      Timeout: 300
+      Environment:
+        Variables:
+          AGENT_RUNTIME_ARN: !Ref AgentRuntimeArn
+      Events:
+        WhatsApp:
+          Type: SNS
+          Properties:
+            Topic: !Ref InboundTopic
+      Policies:
+        - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref IncidentsTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref DedupeTable}
+        - S3CrudPolicy: {BucketName: !Ref MediaBucket}
+        - SSMParameterReadPolicy: {ParameterName: kavach/*}
+        - Statement:
+            - Effect: Allow
+              Action:
+                - social-messaging:SendWhatsAppMessage
+                - social-messaging:GetWhatsAppMessageMedia
+              Resource: "*"
+            - Effect: Allow
+              Action: [transcribe:StartTranscriptionJob, transcribe:GetTranscriptionJob]
+              Resource: "*"
+            - Effect: Allow
+              Action: [bedrock-agentcore:InvokeAgentRuntime]
+              Resource: [!Ref AgentRuntimeArn, !Sub "${AgentRuntimeArn}/*"]
+            - Effect: Allow
+              Action: [ses:SendEmail]
+              Resource: "*"
+
+  EscalationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: kavach-escalation
+      CodeUri: functions/escalation/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref IncidentsTable}
+        - SSMParameterReadPolicy: {ParameterName: kavach/*}
+        - Statement:
+            - Effect: Allow
+              Action: [social-messaging:SendWhatsAppMessage, ses:SendEmail]
+              Resource: "*"
+            - Effect: Allow
+              Action: [scheduler:CreateSchedule]
+              Resource: !Sub "arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/kavach-*"
+            - Effect: Allow
+              Action: [iam:PassRole]
+              # Built by name (not GetAtt) to avoid a circular dependency with SchedulerRole.
+              Resource: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/kavach-scheduler-role"
+
+  DigestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: kavach-weekly-digest
+      CodeUri: functions/digest/
+      Handler: app.handler
+      Timeout: 120
+      Events:
+        SundayMorning:
+          Type: ScheduleV2
+          Properties:
+            ScheduleExpression: "cron(0 9 ? * SUN *)"
+            ScheduleExpressionTimezone: Asia/Kolkata
+      Policies:
+        - DynamoDBReadPolicy: {TableName: !Ref UsersTable}
+        - DynamoDBReadPolicy: {TableName: !Ref IncidentsTable}
+        - SSMParameterReadPolicy: {ParameterName: kavach/*}
+        - Statement:
+            - Effect: Allow
+              Action: [ses:SendEmail]
+              Resource: "*"
+
+  CommunityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: kavach-community-alert
+      CodeUri: functions/community/
+      Handler: app.handler
+      Timeout: 120
+      Policies:
+        - DynamoDBReadPolicy: {TableName: !Ref UsersTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref ReportsTable}
+        - SSMParameterReadPolicy: {ParameterName: kavach/*}
+        - Statement:
+            - Effect: Allow
+              Action: [social-messaging:SendWhatsAppMessage]
+              Resource: "*"
+
+  # ------------------------------------------------------------------ timers
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: kavach-scheduler-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: {Service: scheduler.amazonaws.com}
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: InvokeEscalation
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt EscalationFunction.Arn
+
+Outputs:
+  InboundTopicArn:
+    Description: "Set this as the event destination of your WhatsApp Business Account"
+    Value: !Ref InboundTopic
+  MediaBucketName:
+    Value: !Ref MediaBucket
+  ConfigParameter:
+    Value: !Ref ConfigParameter

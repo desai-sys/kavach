@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Kavach (optional) - check forwarded emails. Deploy in ap-southeast-1 (Singapore), because
+  SES email receiving is not offered in Mumbai. Needs a domain you control, verified in SES
+  Singapore, with an MX record pointing to inbound-smtp.ap-southeast-1.amazonaws.com.
+
+Parameters:
+  CheckAddress:
+    Type: String
+    Description: "Address people forward suspicious emails to, e.g. check@yourdomain.in"
+  AgentRuntimeArn:
+    Type: String
+  HomeRegion:
+    Type: String
+    Default: ap-south-1
+
+Resources:
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: kavach-common-email
+      ContentUri: layers/common/
+      CompatibleRuntimes: [python3.12]
+      CompatibleArchitectures: [arm64]
+    Metadata:
+      BuildMethod: python3.12
+      BuildArchitecture: arm64
+
+  InboundMailBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub kavach-mail-${AWS::AccountId}-${AWS::Region}
+      LifecycleConfiguration:
+        Rules: [{Id: DeleteAfter7Days, Status: Enabled, ExpirationInDays: 7}]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  InboundMailBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref InboundMailBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: {Service: ses.amazonaws.com}
+            Action: s3:PutObject
+            Resource: !Sub "${InboundMailBucket.Arn}/*"
+            Condition:
+              StringEquals: {aws:SourceAccount: !Ref AWS::AccountId}
+
+  EmailCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: kavach-email-inbound
+      CodeUri: functions/email_inbound/
+      Handler: app.handler
+      Runtime: python3.12
+      Architectures: [arm64]
+      Timeout: 300
+      MemorySize: 512
+      Layers: [!Ref CommonLayer]
+      Environment:
+        Variables:
+          INBOUND_BUCKET: !Ref InboundMailBucket
+          INBOUND_PREFIX: inbound/
+          AGENT_RUNTIME_ARN: !Ref AgentRuntimeArn
+          KAVACH_REGION: !Ref HomeRegion
+          KAVACH_CONFIG_PARAM: /kavach/config
+      Policies:
+        - S3ReadPolicy: {BucketName: !Ref InboundMailBucket}
+        - Statement:
+            - Effect: Allow
+              Action: [ssm:GetParameter]
+              Resource: !Sub "arn:${AWS::Partition}:ssm:${HomeRegion}:${AWS::AccountId}:parameter/kavach/*"
+            - Effect: Allow
+              Action: [dynamodb:Scan, dynamodb:GetItem]
+              Resource: !Sub "arn:${AWS::Partition}:dynamodb:${HomeRegion}:${AWS::AccountId}:table/kavach-users"
+            - Effect: Allow
+              Action: [bedrock-agentcore:InvokeAgentRuntime]
+              Resource: [!Ref AgentRuntimeArn, !Sub "${AgentRuntimeArn}/*"]
+            - Effect: Allow
+              Action: [ses:SendEmail, social-messaging:SendWhatsAppMessage]
+              Resource: "*"
+
+  AllowSesInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EmailCheckFunction
+      Action: lambda:InvokeFunction
+      Principal: ses.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
+  RuleSet:
+    Type: AWS::SES::ReceiptRuleSet
+    Properties:
+      RuleSetName: kavach-inbound
+
+  CheckRule:
+    Type: AWS::SES::ReceiptRule
+    DependsOn: [InboundMailBucketPolicy, AllowSesInvoke]
+    Properties:
+      RuleSetName: !Ref RuleSet
+      Rule:
+        Name: kavach-check
+        Enabled: true
+        ScanEnabled: true
+        Recipients: [!Ref CheckAddress]
+        Actions:
+          - S3Action:
+              BucketName: !Ref InboundMailBucket
+              ObjectKeyPrefix: inbound/
+          - LambdaAction:
+              FunctionArn: !GetAtt EmailCheckFunction.Arn
+              InvocationType: Event
+
+Outputs:
+  NextStep:
+    Value: "Activate the rule set: aws ses set-active-receipt-rule-set --rule-set-name kavach-inbound --region ap-southeast-1"

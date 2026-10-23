@@ -1,0 +1,74 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadKavachConfig",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParameter"],
+      "Resource": "arn:aws:ssm:*:*:parameter/kavach/*"
+    },
+    {
+      "Sid": "KavachTables",
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query", "dynamodb:Scan"],
+      "Resource": ["arn:aws:dynamodb:*:*:table/kavach-*", "arn:aws:dynamodb:*:*:table/kavach-*/index/*"]
+    },
+    {
+      "Sid": "KavachMedia",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": "arn:aws:s3:::kavach-media-*/*"
+    },
+    {
+      "Sid": "SendWhatsApp",
+      "Effect": "Allow",
+      "Action": ["social-messaging:SendWhatsAppMessage"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SendEmail",
+      "Effect": "Allow",
+      "Action": ["ses:SendEmail", "ses:SendRawEmail"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EscalationTimers",
+      "Effect": "Allow",
+      "Action": ["scheduler:CreateSchedule"],
+      "Resource": "arn:aws:scheduler:*:*:schedule/default/kavach-*"
+    },
+    {
+      "Sid": "PassSchedulerRole",
+      "Effect": "Allow",
+      "Action": ["iam:PassRole"],
+      "Resource": "arn:aws:iam::*:role/kavach-scheduler-role"
+    },
+    {
+      "Sid": "CommunityAlerts",
+      "Effect": "Allow",
+      "Action": ["lambda:InvokeFunction"],
+      "Resource": "arn:aws:lambda:*:*:function:kavach-community-alert"
+    },
+    {
+      "Sid": "ModelsForVisionAndAgent",
+      "Effect": "Allow",
+      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AgentCoreBrowser",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock-agentcore:StartBrowserSession",
+        "bedrock-agentcore:GetBrowserSession",
+        "bedrock-agentcore:StopBrowserSession",
+        "bedrock-agentcore:UpdateBrowserStream",
+        "bedrock-agentcore:ConnectBrowserAutomationStream",
+        "bedrock-agentcore:ConnectBrowserLiveViewStream",
+        "bedrock-agentcore:ListBrowsers",
+        "bedrock-agentcore:GetBrowser"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 880" width="1400" height="880" font-family="DejaVu Sans, Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#57534e"/>
+    </marker>
+    <marker id="arrow-out" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="880" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="30" y="44" font-size="24" font-weight="700" fill="#1c1917">Kavach: WhatsApp scam shield on AWS</text>
+  <text x="30" y="70" font-size="15" fill="#57534e">Region ap-south-1 (Mumbai) · optional email checking in ap-southeast-1 (Singapore) · grey = inbound, amber = outbound</text>
+
+  <!-- column labels -->
+  <text x="30" y="104" font-size="13" font-weight="700" fill="#78716c" letter-spacing="1">PEOPLE</text>
+  <text x="300" y="104" font-size="13" font-weight="700" fill="#78716c" letter-spacing="1">AWS CDS CHANNELS</text>
+  <text x="590" y="104" font-size="13" font-weight="700" fill="#78716c" letter-spacing="1">INGEST</text>
+
+  <!-- people -->
+  <g>
+    <rect x="30" y="118" width="210" height="96" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+    <text x="45" y="145" font-size="15" font-weight="700" fill="#1c1917">Amma (protected)</text>
+    <text x="45" y="168" font-size="12.5" fill="#44403c">Forwards texts, links,</text>
+    <text x="45" y="186" font-size="12.5" fill="#44403c">screenshots, PDFs and</text>
+    <text x="45" y="204" font-size="12.5" fill="#44403c">Telugu voice notes</text>
+  </g>
+  <g>
+    <rect x="30" y="250" width="210" height="96" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="45" y="277" font-size="15" font-weight="700" fill="#1c1917">Ravi and family</text>
+    <text x="45" y="300" font-size="12.5" fill="#44403c">WhatsApp alerts with</text>
+    <text x="45" y="318" font-size="12.5" fill="#44403c">"I'm calling" buttons,</text>
+    <text x="45" y="336" font-size="12.5" fill="#44403c">emails, Sunday digest</text>
+  </g>
+  <g>
+    <rect x="30" y="400" width="210" height="78" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="45" y="427" font-size="15" font-weight="700" fill="#1c1917">Bank fraud desk</text>
+    <text x="45" y="450" font-size="12.5" fill="#44403c">Golden-hour fraud</text>
+    <text x="45" y="468" font-size="12.5" fill="#44403c">report by email</text>
+  </g>
+  <g>
+    <rect x="30" y="540" width="210" height="78" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="45" y="567" font-size="15" font-weight="700" fill="#1c1917">Email forwarder</text>
+    <text x="45" y="590" font-size="12.5" fill="#44403c">Forwards a suspicious</text>
+    <text x="45" y="608" font-size="12.5" fill="#44403c">email (optional)</text>
+  </g>
+
+  <!-- channels -->
+  <g>
+    <rect x="300" y="118" width="220" height="150" rx="10" fill="#ecfdf5" stroke="#15803d" stroke-width="2"/>
+    <text x="315" y="145" font-size="15" font-weight="700" fill="#1c1917">End User Messaging</text>
+    <text x="315" y="165" font-size="15" font-weight="700" fill="#1c1917">Social (WhatsApp)</text>
+    <text x="315" y="190" font-size="12.5" fill="#44403c">Messages, media, buttons</text>
+    <text x="315" y="208" font-size="12.5" fill="#44403c">Templates: family alert,</text>
+    <text x="315" y="226" font-size="12.5" fill="#44403c">district scam warning</text>
+  </g>
+  <g>
+    <rect x="300" y="380" width="220" height="118" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="315" y="407" font-size="15" font-weight="700" fill="#1c1917">Amazon SES</text>
+    <text x="315" y="430" font-size="12.5" fill="#44403c">Family alert emails</text>
+    <text x="315" y="448" font-size="12.5" fill="#44403c">Bank fraud report</text>
+    <text x="315" y="466" font-size="12.5" fill="#44403c">Sunday family digest</text>
+  </g>
+  <g>
+    <rect x="300" y="540" width="220" height="78" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="315" y="567" font-size="15" font-weight="700" fill="#1c1917">SES email receiving</text>
+    <text x="315" y="590" font-size="12.5" fill="#44403c">Singapore · receipt rule</text>
+    <text x="315" y="608" font-size="12.5" fill="#44403c">to S3 + Lambda</text>
+  </g>
+
+  <!-- ingest -->
+  <g>
+    <rect x="590" y="118" width="220" height="62" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="605" y="144" font-size="15" font-weight="700" fill="#1c1917">Amazon SNS</text>
+    <text x="605" y="166" font-size="12.5" fill="#44403c">kavach-whatsapp-inbound</text>
+  </g>
+  <g>
+    <rect x="590" y="214" width="220" height="132" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="605" y="240" font-size="15" font-weight="700" fill="#1c1917">Inbound Lambda</text>
+    <text x="605" y="263" font-size="12.5" fill="#44403c">De-duplicate, consent,</text>
+    <text x="605" y="281" font-size="12.5" fill="#44403c">language, button taps</text>
+    <text x="605" y="299" font-size="12.5" fill="#44403c">Media to S3, voice to text</text>
+    <text x="605" y="317" font-size="12.5" fill="#44403c">Calls agent, sends reply</text>
+  </g>
+  <g>
+    <rect x="590" y="380" width="220" height="62" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="605" y="406" font-size="15" font-weight="700" fill="#1c1917">Amazon Transcribe</text>
+    <text x="605" y="428" font-size="12.5" fill="#44403c">te-IN · hi-IN · en-IN</text>
+  </g>
+  <g>
+    <rect x="590" y="540" width="220" height="78" rx="10" fill="#ffffff" stroke="#a8a29e" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="605" y="567" font-size="15" font-weight="700" fill="#1c1917">Email check Lambda</text>
+    <text x="605" y="590" font-size="12.5" fill="#44403c">Parses email, asks the</text>
+    <text x="605" y="608" font-size="12.5" fill="#44403c">agent, replies by email</text>
+  </g>
+
+  <!-- AgentCore container -->
+  <g>
+    <rect x="880" y="90" width="490" height="380" rx="14" fill="#faf5ff" stroke="#7e22ce" stroke-width="2"/>
+    <text x="900" y="118" font-size="16" font-weight="700" fill="#6b21a8">Amazon Bedrock AgentCore</text>
+    <rect x="900" y="134" width="450" height="176" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
+    <text x="916" y="160" font-size="15" font-weight="700" fill="#1c1917">Runtime: Kavach agent (Strands)</text>
+    <text x="916" y="182" font-size="12.5" fill="#44403c">Claude Sonnet 4.6 on Amazon Bedrock (global profile)</text>
+    <text x="916" y="210" font-size="12.5" font-weight="700" fill="#1c1917">Investigate</text>
+    <text x="916" y="228" font-size="12.5" fill="#44403c">analyze_media · check_domain · inspect_link</text>
+    <text x="916" y="246" font-size="12.5" fill="#44403c">check_reputation · search_scam_playbooks</text>
+    <text x="916" y="272" font-size="12.5" font-weight="700" fill="#1c1917">Act</text>
+    <text x="916" y="290" font-size="12.5" fill="#44403c">alert_family · start_golden_hour · record_verdict</text>
+    <rect x="900" y="326" width="216" height="126" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
+    <text x="916" y="352" font-size="15" font-weight="700" fill="#1c1917">AgentCore Memory</text>
+    <text x="916" y="375" font-size="12.5" fill="#44403c">Today's conversation,</text>
+    <text x="916" y="393" font-size="12.5" fill="#44403c">long-term facts: bank,</text>
+    <text x="916" y="411" font-size="12.5" fill="#44403c">past scams, family</text>
+    <rect x="1134" y="326" width="216" height="126" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
+    <text x="1150" y="352" font-size="15" font-weight="700" fill="#1c1917">AgentCore Browser</text>
+    <text x="1150" y="375" font-size="12.5" fill="#44403c">Opens suspicious links</text>
+    <text x="1150" y="393" font-size="12.5" fill="#44403c">in an isolated browser,</text>
+    <text x="1150" y="411" font-size="12.5" fill="#44403c">never fills forms</text>
+  </g>
+
+  <!-- data -->
+  <g>
+    <rect x="880" y="530" width="235" height="88" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="896" y="557" font-size="15" font-weight="700" fill="#1c1917">Amazon DynamoDB</text>
+    <text x="896" y="580" font-size="12.5" fill="#44403c">users · incidents</text>
+    <text x="896" y="598" font-size="12.5" fill="#44403c">community scam reports</text>
+  </g>
+  <g>
+    <rect x="1135" y="530" width="235" height="88" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="1151" y="557" font-size="15" font-weight="700" fill="#1c1917">Amazon S3</text>
+    <text x="1151" y="580" font-size="12.5" fill="#44403c">Media, link screenshots</text>
+    <text x="1151" y="598" font-size="12.5" fill="#44403c">deleted after 7 days</text>
+  </g>
+
+  <!-- timers -->
+  <g>
+    <rect x="590" y="690" width="220" height="110" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <text x="605" y="716" font-size="15" font-weight="700" fill="#1c1917">EventBridge Scheduler</text>
+    <text x="605" y="739" font-size="12.5" fill="#44403c">5-min family escalation</text>
+    <text x="605" y="757" font-size="12.5" fill="#44403c">15-min golden-hour check</text>
+    <text x="605" y="775" font-size="12.5" fill="#44403c">Sunday 9 AM IST digest</text>
+  </g>
+  <g>
+    <rect x="880" y="690" width="150" height="110" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="894" y="716" font-size="14" font-weight="700" fill="#1c1917">escalation</text>
+    <text x="894" y="739" font-size="12.5" fill="#44403c">Re-alerts family,</text>
+    <text x="894" y="757" font-size="12.5" fill="#44403c">asks "did you</text>
+    <text x="894" y="775" font-size="12.5" fill="#44403c">call 1930?"</text>
+  </g>
+  <g>
+    <rect x="1050" y="690" width="150" height="110" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="1064" y="716" font-size="14" font-weight="700" fill="#1c1917">weekly-digest</text>
+    <text x="1064" y="739" font-size="12.5" fill="#44403c">Emails each</text>
+    <text x="1064" y="757" font-size="12.5" fill="#44403c">family its week</text>
+  </g>
+  <g>
+    <rect x="1220" y="690" width="150" height="110" rx="10" fill="#ffffff" stroke="#57534e" stroke-width="1.5"/>
+    <text x="1234" y="716" font-size="14" font-weight="700" fill="#1c1917">community-alert</text>
+    <text x="1234" y="739" font-size="12.5" fill="#44403c">Warns a district</text>
+    <text x="1234" y="757" font-size="12.5" fill="#44403c">about a scam wave</text>
+  </g>
+  <text x="880" y="830" font-size="12.5" fill="#57534e">Lambda functions: Python 3.12 on arm64</text>
+  <text x="880" y="850" font-size="12.5" fill="#57534e">Shared settings: SSM Parameter Store /kavach/config</text>
+
+  <!-- inbound arrows (grey) -->
+  <g fill="none" stroke="#57534e" stroke-width="1.75">
+    <path d="M240 150 H296" marker-end="url(#arrow)"/>
+    <path d="M520 149 H586" marker-end="url(#arrow)"/>
+    <path d="M700 180 V210" marker-end="url(#arrow)"/>
+    <path d="M700 346 V376" marker-end="url(#arrow)"/>
+    <path d="M810 260 H896" marker-end="url(#arrow)"/>
+    <path d="M240 579 H296" marker-end="url(#arrow)"/>
+    <path d="M520 579 H586" marker-end="url(#arrow)"/>
+    <path d="M810 579 H845 V420 H876" marker-end="url(#arrow)"/>
+    <path d="M997 470 V526" marker-end="url(#arrow)"/>
+    <path d="M1252 470 V526" marker-end="url(#arrow)"/>
+    <path d="M810 745 H876" marker-end="url(#arrow)"/>
+    <path d="M1340 470 V500 H1390 V745 H1374" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  </g>
+  <text x="826" y="250" font-size="12" fill="#57534e">invoke</text>
+  <text x="1334" y="492" font-size="12" fill="#57534e" text-anchor="end">scam wave</text>
+
+  <!-- outbound arrows (amber) -->
+  <g fill="none" stroke="#b45309" stroke-width="1.75">
+    <path d="M880 450 H860 V490 H550 V246 H524" marker-end="url(#arrow-out)"/>
+    <path d="M550 452 H524" marker-end="url(#arrow-out)"/>
+    <path d="M296 182 H270 V182 H244" marker-end="url(#arrow-out)"/>
+    <path d="M296 240 H266 V298 H244" marker-end="url(#arrow-out)"/>
+    <path d="M296 440 H244" marker-end="url(#arrow-out)"/>
+    <path d="M296 410 H268 V330 H244" marker-end="url(#arrow-out)"/>
+    <path d="M700 690 V650 H550 V494" marker-end="url(#arrow-out)" stroke-dasharray="5 4"/>
+  </g>
+  <text x="566" y="484" font-size="12" fill="#b45309">replies, alerts, reports</text>
+  <text x="566" y="644" font-size="12" fill="#b45309">timed follow-ups</text>
+</svg>

@@ -1,0 +1,62 @@
+"""Per-request context shared between the entrypoint and the tools.
+
+Each AgentCore Runtime session runs in its own microVM, so a request-scoped
+ContextVar is enough to give tools the current user without passing it through
+the model.
+"""
+from __future__ import annotations
+
+from contextvars import ContextVar
+from dataclasses import dataclass, field
+
+import kavach_common as kc
+
+
+@dataclass
+class Request:
+    user: dict
+    message_id: str | None = None
+    channel: str = "whatsapp"
+    media: list = field(default_factory=list)
+    incident_id: str | None = None
+    verdict: str | None = None
+    actions: list = field(default_factory=list)
+
+    @property
+    def phone(self) -> str:
+        return kc.normalize_phone(self.user.get("phone", ""))
+
+    @property
+    def language(self) -> str:
+        return self.user.get("language") or "en"
+
+    def ensure_incident(self, kind: str, **fields) -> str:
+        """Create one incident row per request, the first time a tool needs it."""
+        if not self.incident_id:
+            incident = kc.put_incident({
+                "phone": self.phone, "name": self.user.get("name", ""), "type": kind,
+                "district": self.user.get("district", ""), "message_id": self.message_id,
+                "channel": self.channel, **fields,
+            })
+            self.incident_id = incident["incident_id"]
+        elif fields:
+            kc.update_incident(self.incident_id, **fields)
+        return self.incident_id
+
+
+_current: ContextVar[Request | None] = ContextVar("kavach_request", default=None)
+_fallback: list[Request] = []  # tools may run in worker threads without the ContextVar copy
+
+
+def start_request(**kwargs) -> Request:
+    req = Request(**kwargs)
+    _current.set(req)
+    _fallback[:] = [req]
+    return req
+
+
+def current() -> Request:
+    req = _current.get() or (_fallback[0] if _fallback else None)
+    if req is None:
+        raise RuntimeError("No active Kavach request")
+    return req
