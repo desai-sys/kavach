@@ -33,7 +33,17 @@ DEFAULT_REGION = os.getenv("KAVACH_REGION") or os.getenv("AWS_REGION") or "ap-so
 def cfg() -> dict:
     """Load the Kavach config JSON from SSM Parameter Store (cached per process)."""
     ssm = boto3.client("ssm", region_name=DEFAULT_REGION)
-    value = ssm.get_parameter(Name=CONFIG_PARAM)["Parameter"]["Value"]
+    try:
+        value = ssm.get_parameter(Name=CONFIG_PARAM)["Parameter"]["Value"]
+    except ssm.exceptions.ParameterNotFound:
+        try:
+            account = boto3.client("sts", region_name=DEFAULT_REGION).get_caller_identity()["Account"]
+        except Exception:
+            account = "unknown"
+        raise RuntimeError(
+            f"Kavach config {CONFIG_PARAM} was not found in region {DEFAULT_REGION} of AWS account {account}. "
+            "Deploy the SAM stack (template.yaml) to this region and account first, or set AWS_REGION to the "
+            "region where you deployed it.") from None
     data = json.loads(value)
     data.setdefault("region", DEFAULT_REGION)
     data.setdefault("meta_api_version", "v20.0")
