@@ -29,7 +29,10 @@ from kavach_memory import get_session_manager
 from prompts import build_system_prompt
 from tools import ALL_TOOLS
 
-MODEL_ID = os.getenv("KAVACH_MODEL_ID", "global.anthropic.claude-sonnet-4-6")
+# Amazon Nova 2 Lite through its global inference profile (serves Mumbai). Any Bedrock model
+# with tool use works: set KAVACH_MODEL_ID in agentcore.json envVars, e.g.
+# global.anthropic.claude-sonnet-4-6 if your account has Anthropic access.
+MODEL_ID = os.getenv("KAVACH_MODEL_ID", "global.amazon.nova-2-lite-v1:0")
 
 app = BedrockAgentCoreApp()
 log = app.logger
@@ -49,7 +52,8 @@ def invoke(payload: dict, context=None) -> dict:
     session_manager = get_session_manager(session_id, actor_id)
 
     agent = Agent(
-        model=BedrockModel(model_id=MODEL_ID, max_tokens=2048, temperature=0.2),
+        # Near-greedy decoding keeps tool calls reliable.
+        model=BedrockModel(model_id=MODEL_ID, max_tokens=2048, temperature=0.0),
         system_prompt=build_system_prompt(user, req.channel),
         tools=ALL_TOOLS,
         session_manager=session_manager,

@@ -17,7 +17,7 @@ from strands import tool
 import kavach_common as kc
 from kavach_context import current
 
-VISION_MODEL_ID = os.getenv("KAVACH_VISION_MODEL_ID") or os.getenv("KAVACH_MODEL_ID", "global.anthropic.claude-sonnet-4-6")
+VISION_MODEL_ID = os.getenv("KAVACH_VISION_MODEL_ID") or os.getenv("KAVACH_MODEL_ID", "global.amazon.nova-2-lite-v1:0")
 PLAYBOOKS = json.loads((Path(__file__).resolve().parent.parent / "playbooks.json").read_text(encoding="utf-8"))
 UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128 Mobile Safari/537.36"
 

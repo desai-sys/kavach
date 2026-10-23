@@ -20,7 +20,7 @@ Built for the AWS Communication Developer Services (CDS) Agentic AI Partner Hack
 | **Amazon Bedrock AgentCore Runtime** | Hosts the Strands agent (`agent/`) |
 | **AgentCore Memory** | Short-term conversation plus long-term facts per person (bank, past scams) |
 | **AgentCore Browser** | Opens suspicious links in an isolated cloud browser and reports what the page asks for |
-| **Amazon Bedrock (Claude Sonnet 4.6, global profile from Mumbai)** | Agent reasoning, plus reading screenshots and PDF "notices" |
+| **Amazon Bedrock (Amazon Nova 2 Lite, global inference profile from Mumbai)** | Agent reasoning, plus reading screenshots and PDF "notices" |
 | **Amazon Transcribe** | Telugu (te-IN), Hindi (hi-IN) and English (en-IN) voice notes |
 | **AWS Lambda, Amazon SNS, Amazon DynamoDB, Amazon S3** | Message handling, users/incidents/community reports, media (deleted after 7 days) |
 | **Amazon EventBridge Scheduler** | 5-minute family escalation timers, 15-minute golden-hour check-ins, weekly digest |

@@ -101,7 +101,7 @@
     <text x="900" y="118" font-size="16" font-weight="700" fill="#6b21a8">Amazon Bedrock AgentCore</text>
     <rect x="900" y="134" width="450" height="176" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
     <text x="916" y="160" font-size="15" font-weight="700" fill="#1c1917">Runtime: Kavach agent (Strands)</text>
-    <text x="916" y="182" font-size="12.5" fill="#44403c">Claude Sonnet 4.6 on Amazon Bedrock (global profile)</text>
+    <text x="916" y="182" font-size="12.5" fill="#44403c">Amazon Nova 2 Lite on Amazon Bedrock (global profile)</text>
     <text x="916" y="210" font-size="12.5" font-weight="700" fill="#1c1917">Investigate</text>
     <text x="916" y="228" font-size="12.5" fill="#44403c">analyze_media · check_domain · inspect_link</text>
     <text x="916" y="246" font-size="12.5" fill="#44403c">check_reputation · search_scam_playbooks</text>
