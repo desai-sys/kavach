@@ -47,8 +47,9 @@ def main() -> None:
             shutil.copytree(item, target, ignore=shutil.ignore_patterns("__pycache__"))
         else:
             shutil.copy2(item, target)
-    for shared in ("kavach_common.py", "kavach_business.py", "businesses.json", "kavach_ops.py"):
-        shutil.copy2(REPO / "layers" / "common" / shared, app_dir / shared)
+    for shared in sorted((REPO / "layers" / "common").iterdir()):  # kavach_*.py modules and businesses.json
+        if shared.suffix in (".py", ".json"):
+            shutil.copy2(shared, app_dir / shared.name)
     print(f"Copied agent code into {app_dir}")
 
     # 2. dependencies

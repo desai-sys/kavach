@@ -3,6 +3,7 @@
 kind = "family_escalation": nobody tapped "I'm calling" yet -> re-alert and email (step 1),
                             then mark the incident as unanswered and email again (step 2).
 kind = "golden_hour_check": 15 minutes after money was lost, ask whether 1930 was called.
+kind = "appointment_reminder": before a clinic visit booked through Kavach (kavach_clinic.send_reminder).
 """
 from __future__ import annotations
 
@@ -24,6 +25,9 @@ GH_BUTTONS = {
 
 def handler(event, _context):
     kind = event.get("kind")
+    if kind == "appointment_reminder":
+        import kavach_clinic
+        return kavach_clinic.send_reminder(event)
     incident = kc.get_incident(event.get("incident_id", ""))
     if not incident:
         print(f"No incident for {event}")

@@ -166,6 +166,25 @@ def wa_buttons(to: str, body: str, buttons: list[tuple[str, str]], header: str |
     wa_send({"to": normalize_phone(to), "recipient_type": "individual", "type": "interactive", "interactive": interactive})
 
 
+def wa_list(to: str, body: str, button: str, sections: list[dict], header: str | None = None) -> None:
+    """A list message (up to 10 rows in total): sections=[{"title", "rows": [{"id", "title", "description"}]}].
+    Row titles are cut to 24 characters, descriptions to 72. Only inside the 24-hour window."""
+    rows_left = 10
+    out = []
+    for section in sections:
+        rows = section.get("rows", [])[:rows_left]
+        rows_left -= len(rows)
+        if rows:
+            out.append({"title": section.get("title", "")[:24], "rows": [
+                {"id": r["id"][:200], "title": r["title"][:24], "description": r.get("description", "")[:72]}
+                for r in rows]})
+    interactive: dict = {"type": "list", "body": {"text": body[:1024]},
+                         "action": {"button": button[:20], "sections": out}}
+    if header:
+        interactive["header"] = {"type": "text", "text": header[:60]}
+    wa_send({"to": normalize_phone(to), "recipient_type": "individual", "type": "interactive", "interactive": interactive})
+
+
 def wa_template(to: str, name: str, language: str, body_params: list[str],
                 quick_reply_payloads: list[str] | None = None) -> dict:
     """Send an approved template (works outside the 24-hour window).

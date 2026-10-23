@@ -25,6 +25,7 @@ class Request:
     evidence: dict | None = None
     actions: list = field(default_factory=list)
     ops_pending: dict | None = None     # ops mode: the one start/stop/reboot waiting for the owner's Yes
+    list_message: dict | None = None    # a WhatsApp list (e.g. appointment times) to send after the reply
 
     @property
     def phone(self) -> str:

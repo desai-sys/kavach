@@ -20,6 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import kavach_business as kb
 import kavach_common as kc
+import shopping
 from tools.investigate import (BRAND_LABELS, OFFICIAL_DOMAINS, _host_of, _normalize_identifier, _registrable,
                                analyze_media, check_domain, check_reputation, search_scam_playbooks)
 
@@ -259,6 +260,13 @@ def apply_rules(text: str, ex: dict, domain_checks: dict, reputation: dict, medi
         flag("fee_for_prize", "high", "The message promises a prize or lottery win but asks for a fee.",
              "Genuine prizes never require you to pay a fee, tax or GST first.", "Kavach rule")
 
+    discounts = [int(d) for d in re.findall(r"(\d{2,3})\s?%\s?(?:off|discount|छूट|తగ్గింపు)", t) if int(d) <= 100]
+    official_shop = any(domain_checks.get(link["host"], {}).get("official_brand") for link in ex["links"])
+    if discounts and max(discounts) >= 70 and not official_shop:
+        flag("too_good_deal", "medium", f"The offer claims {max(discounts)}% off from a seller or site Kavach can't verify.",
+             "Fake shopping sites and social-media ads use 70-90% discounts, take payment by UPI and never deliver. "
+             "Check the same product in the official Amazon or Flipkart app first.", "Kavach rule")
+
     if _has(t, RETURNS_WORDS) and _has(t, INVEST_WORDS):
         flag("guaranteed_returns", "high", "The message promises guaranteed or very high investment returns.",
              "No genuine investment can guarantee returns. Check advisers on the SEBI website before investing.",
@@ -407,6 +415,7 @@ def build(text: str, media: list | None = None, user_phone: str = "", guardian_p
                           for h, dc in domain_results.items()},
         "community_reports": {i: r for i, r in reputation.items() if r.get("reports")},
         "business_check": business,
+        "product_lookup": shopping.lookup_from_findings(image_findings),
         "red_flags": flags,
         "genuine_signals": genuine,
         "matched_playbooks": playbooks,

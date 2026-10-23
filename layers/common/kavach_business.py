@@ -511,6 +511,7 @@ def buttons_for(business_id: str, verdict: str | None, lang: str | None, inciden
     lang = lang if lang in LANGS else "en"
     normal = [a for a in p["actions"] if a["kind"] != "report"
               and (is_customer or a["kind"] not in ("summary", "booking", "refill"))]
+    # (booking an appointment needs no existing record, so "appointment" stays for everyone)
     report = [a for a in p["actions"] if a["kind"] == "report"]
     chosen = normal[:MAX_BUTTONS - 1] + report[:1] if (verdict in RISKY_VERDICTS and report) else normal[:MAX_BUTTONS]
     ref = incident_id or "-"
@@ -623,6 +624,10 @@ def perform_action(user: dict, business_id: str, action: str, incident_id: str |
                                      "warning other customers.</p>"),
                       "\n".join(f"{k}: {v}" for k, v in rows))
         text = _t("report_ok", lang, name=name, names=_poss(name))
+    elif kind == "appointment":
+        import kavach_clinic  # local import: kavach_clinic imports this module
+        text = kavach_clinic.send_slot_list(user, business_id)
+        send = False  # the slot list was just sent
     else:
         text = _t("expired", lang)
 

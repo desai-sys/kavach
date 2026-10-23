@@ -26,6 +26,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 
 import kavach_business as kb
+import kavach_clinic as kclinic
 import kavach_common as kc
 import kavach_ops as kops
 
@@ -181,7 +182,14 @@ def handle_ops(phone: str, user: dict | None, request: str, message_id: str) -> 
 
 
 def send_buttons(phone: str, result: dict | None) -> None:
-    """Tap-to-reply buttons the agent asked for: a member business's actions, or an ops Yes / Cancel."""
+    """Interactive follow-ups the agent asked for: a list (appointment times), a member business's actions,
+    or an ops Yes / Cancel."""
+    lst = (result or {}).get("list")
+    if lst:
+        try:
+            kc.wa_list(phone, lst["body"], lst["button"], lst["sections"], header=lst.get("header"))
+        except Exception as exc:
+            print(f"List not sent: {exc!r}")
     buttons = (result or {}).get("buttons") or []
     if not buttons:
         return
@@ -254,6 +262,12 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
         # Owner's answer to "Stop dev-server?": OPS|yes|<token> or OPS|no|<token>. Runs here, not in the model.
         answer, _, token = rest.partition("|")
         _safe_text(phone, kops.handle_tap(phone, answer, token))
+        return
+
+    if kind in ("SLOT", "APPT") and user and user.get("status") == "active":
+        # Appointment time picked (SLOT|<clinic>|<slot>) or reminder answered (APPT|going|cancel|...).
+        # Plain code: the slot is booked with a conditional write, by the sender's own number.
+        kclinic.handle_tap(user, choice)
         return
 
     if kind == "BIZ" and user and user.get("status") == "active":

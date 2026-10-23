@@ -7,10 +7,23 @@
       "short_name": "Kalpavi",
       "kind": "bank",
       "regulated_bfsi": true,
-      "aliases": ["kalpavi bank", "kalpavi", "కల్పవి బ్యాంక్", "కల్పవి", "कल्पवि बैंक", "कल्पवि"],
-      "brand_tokens": ["kalpavi"],
-      "official_domains": ["kalpavi.bank.in"],
-      "sms_headers": ["KLPAVI"],
+      "aliases": [
+        "kalpavi bank",
+        "kalpavi",
+        "కల్పవి బ్యాంక్",
+        "కల్పవి",
+        "कल्पवि बैंक",
+        "कल्पवि"
+      ],
+      "brand_tokens": [
+        "kalpavi"
+      ],
+      "official_domains": [
+        "kalpavi.bank.in"
+      ],
+      "sms_headers": [
+        "KLPAVI"
+      ],
       "official_upi_ids": [],
       "how_you_pay": "Kalpavi Bank never collects money through UPI IDs, QR codes or links sent in messages; payments happen only in the Kalpavi app or at a branch",
       "never": [
@@ -24,9 +37,33 @@
       "callback_hours": 2,
       "desk_email": "",
       "actions": [
-        {"id": "status", "kind": "summary", "title": {"en": "My account status", "te": "నా ఖాతా వివరాలు", "hi": "मेरे खाते का हाल"}},
-        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
-        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+        {
+          "id": "status",
+          "kind": "summary",
+          "title": {
+            "en": "My account status",
+            "te": "నా ఖాతా వివరాలు",
+            "hi": "मेरे खाते का हाल"
+          }
+        },
+        {
+          "id": "callback",
+          "kind": "callback",
+          "title": {
+            "en": "Call me back",
+            "te": "నాకు కాల్ చేయండి",
+            "hi": "मुझे कॉल करें"
+          }
+        },
+        {
+          "id": "report",
+          "kind": "report",
+          "title": {
+            "en": "Report this scam",
+            "te": "మోసం రిపోర్ట్",
+            "hi": "धोखे की रिपोर्ट"
+          }
+        }
       ],
       "demo_record": {
         "status": {
@@ -37,8 +74,18 @@
           "amount_due_now": 0,
           "refund_pending": false,
           "transactions": [
-            {"date": "{iso:today-1}", "amount": 2000, "type": "debit", "detail": "UPI to Sri Lakshmi Kirana"},
-            {"date": "{iso:today-6}", "amount": 15000, "type": "credit", "detail": "pension"}
+            {
+              "date": "{iso:today-1}",
+              "amount": 2000,
+              "type": "debit",
+              "detail": "UPI to Sri Lakshmi Kirana"
+            },
+            {
+              "date": "{iso:today-6}",
+              "amount": 15000,
+              "type": "credit",
+              "detail": "pension"
+            }
           ]
         },
         "summary": {
@@ -69,10 +116,26 @@
       "short_name": "Nidhira",
       "kind": "insurer",
       "regulated_bfsi": true,
-      "aliases": ["nidhira health insurance", "nidhira health", "nidhira insurance", "nidhira", "నిధిరా హెల్త్", "నిధిర హెల్త్", "నిధిరా", "निधिरा हेल्थ", "निधिरा"],
-      "brand_tokens": ["nidhira"],
-      "official_domains": ["nidhirahealth.in"],
-      "sms_headers": ["NIDHIR"],
+      "aliases": [
+        "nidhira health insurance",
+        "nidhira health",
+        "nidhira insurance",
+        "nidhira",
+        "నిధిరా హెల్త్",
+        "నిధిర హెల్త్",
+        "నిధిరా",
+        "निधिरा हेल्थ",
+        "निधिरा"
+      ],
+      "brand_tokens": [
+        "nidhira"
+      ],
+      "official_domains": [
+        "nidhirahealth.in"
+      ],
+      "sms_headers": [
+        "NIDHIR"
+      ],
       "official_upi_ids": [],
       "how_you_pay": "Nidhira collects premiums only in the Nidhira app, at nidhirahealth.in or by an auto-debit you set up, never through UPI IDs or links sent in messages",
       "never": [
@@ -85,9 +148,33 @@
       "callback_hours": 4,
       "desk_email": "",
       "actions": [
-        {"id": "policy", "kind": "summary", "title": {"en": "My real policy", "te": "నా అసలు పాలసీ", "hi": "मेरी असली पॉलिसी"}},
-        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
-        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+        {
+          "id": "policy",
+          "kind": "summary",
+          "title": {
+            "en": "My real policy",
+            "te": "నా అసలు పాలసీ",
+            "hi": "मेरी असली पॉलिसी"
+          }
+        },
+        {
+          "id": "callback",
+          "kind": "callback",
+          "title": {
+            "en": "Call me back",
+            "te": "నాకు కాల్ చేయండి",
+            "hi": "मुझे कॉल करें"
+          }
+        },
+        {
+          "id": "report",
+          "kind": "report",
+          "title": {
+            "en": "Report this scam",
+            "te": "మోసం రిపోర్ట్",
+            "hi": "धोखे की रिपोर्ट"
+          }
+        }
       ],
       "demo_record": {
         "status": {
@@ -127,10 +214,21 @@
       "short_name": "Dawaghar",
       "kind": "pharmacy",
       "regulated_bfsi": false,
-      "aliases": ["dawaghar pharmacy", "dawaghar", "దవాఘర్", "दवाघर"],
-      "brand_tokens": ["dawaghar"],
-      "official_domains": ["dawaghar.in"],
-      "sms_headers": ["DAWAGR"],
+      "aliases": [
+        "dawaghar pharmacy",
+        "dawaghar",
+        "దవాఘర్",
+        "दवाघर"
+      ],
+      "brand_tokens": [
+        "dawaghar"
+      ],
+      "official_domains": [
+        "dawaghar.in"
+      ],
+      "sms_headers": [
+        "DAWAGR"
+      ],
       "official_upi_ids": [],
       "how_you_pay": "You pay Dawaghar in its app, or in cash or UPI to the delivery person after you receive your medicines",
       "never": [
@@ -138,14 +236,48 @@
         "asks for OTPs or card details",
         "delivers prescription medicines without a valid prescription"
       ],
-      "policies": {"no_advance_payment": true},
+      "policies": {
+        "no_advance_payment": true
+      },
       "callback_hours": 2,
       "desk_email": "",
       "actions": [
-        {"id": "refill", "kind": "refill", "title": {"en": "Reserve my refill", "te": "రీఫిల్ రిజర్వ్", "hi": "रीफ़िल रिज़र्व करें"}},
-        {"id": "orders", "kind": "summary", "title": {"en": "My medicines", "te": "నా మందులు", "hi": "मेरी दवाइयाँ"}},
-        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
-        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+        {
+          "id": "refill",
+          "kind": "refill",
+          "title": {
+            "en": "Reserve my refill",
+            "te": "రీఫిల్ రిజర్వ్",
+            "hi": "रीफ़िल रिज़र्व करें"
+          }
+        },
+        {
+          "id": "orders",
+          "kind": "summary",
+          "title": {
+            "en": "My medicines",
+            "te": "నా మందులు",
+            "hi": "मेरी दवाइयाँ"
+          }
+        },
+        {
+          "id": "callback",
+          "kind": "callback",
+          "title": {
+            "en": "Call me back",
+            "te": "నాకు కాల్ చేయండి",
+            "hi": "मुझे कॉल करें"
+          }
+        },
+        {
+          "id": "report",
+          "kind": "report",
+          "title": {
+            "en": "Report this scam",
+            "te": "మోసం రిపోర్ట్",
+            "hi": "धोखे की रिपोर्ट"
+          }
+        }
       ],
       "demo_record": {
         "status": {
@@ -184,10 +316,23 @@
       "short_name": "Chamak",
       "kind": "home_services",
       "regulated_bfsi": false,
-      "aliases": ["chamak home services", "chamak home", "chamak", "చమక్ హోమ్", "చమక్", "चमक होम"],
-      "brand_tokens": ["chamak"],
-      "official_domains": ["chamakhome.in"],
-      "sms_headers": ["CHAMAK"],
+      "aliases": [
+        "chamak home services",
+        "chamak home",
+        "chamak services",
+        "chamak app",
+        "చమక్ హోమ్",
+        "चमक होम"
+      ],
+      "brand_tokens": [
+        "chamak"
+      ],
+      "official_domains": [
+        "chamakhome.in"
+      ],
+      "sms_headers": [
+        "CHAMAK"
+      ],
       "official_upi_ids": [],
       "how_you_pay": "You pay Chamak in the Chamak app only after the job is done",
       "never": [
@@ -195,13 +340,39 @@
         "asks you to pay a professional's personal UPI ID",
         "sends a professional who doesn't know the visit code in your booking"
       ],
-      "policies": {"no_advance_payment": true},
+      "policies": {
+        "no_advance_payment": true
+      },
       "callback_hours": 1,
       "desk_email": "",
       "actions": [
-        {"id": "booking", "kind": "booking", "title": {"en": "Check my booking", "te": "నా బుకింగ్ చూపించు", "hi": "मेरी बुकिंग देखें"}},
-        {"id": "callback", "kind": "callback", "title": {"en": "Call me back", "te": "నాకు కాల్ చేయండి", "hi": "मुझे कॉल करें"}},
-        {"id": "report", "kind": "report", "title": {"en": "Report this scam", "te": "మోసం రిపోర్ట్", "hi": "धोखे की रिपोर्ट"}}
+        {
+          "id": "booking",
+          "kind": "booking",
+          "title": {
+            "en": "Check my booking",
+            "te": "నా బుకింగ్ చూపించు",
+            "hi": "मेरी बुकिंग देखें"
+          }
+        },
+        {
+          "id": "callback",
+          "kind": "callback",
+          "title": {
+            "en": "Call me back",
+            "te": "నాకు కాల్ చేయండి",
+            "hi": "मुझे कॉल करें"
+          }
+        },
+        {
+          "id": "report",
+          "kind": "report",
+          "title": {
+            "en": "Report this scam",
+            "te": "మోసం రిపోర్ట్",
+            "hi": "धोखे की रिपोर्ट"
+          }
+        }
       ],
       "demo_record": {
         "status": {
@@ -232,6 +403,232 @@
           ]
         },
         "visit_code": "{visit_code}"
+      }
+    },
+    {
+      "id": "dhanvi_clinic",
+      "name": "Dhanvi Family Clinic",
+      "short_name": "Dhanvi Clinic",
+      "kind": "clinic",
+      "regulated_bfsi": false,
+      "aliases": [
+        "dhanvi family clinic",
+        "dhanvi clinic",
+        "ధన్వి క్లినిక్",
+        "ధన్వి ఫ్యామిలీ క్లినిక్",
+        "धन्वी क्लिनिक"
+      ],
+      "brand_tokens": [
+        "dhanvi"
+      ],
+      "official_domains": [
+        "dhanviclinic.in"
+      ],
+      "sms_headers": [
+        "DHANVI"
+      ],
+      "official_upi_ids": [],
+      "how_you_pay": "You pay the consultation fee at the Dhanvi Clinic reception after your visit, never through links or UPI IDs in messages",
+      "never": [
+        "asks for an advance or a booking fee to confirm an appointment",
+        "asks for OTPs, card details or Aadhaar copies over WhatsApp",
+        "sends a doctor or nurse to your home without a visit you booked"
+      ],
+      "policies": {
+        "no_advance_payment": true
+      },
+      "callback_hours": 2,
+      "desk_email": "",
+      "address": "Gandhi Road, Kurnool (demo clinic)",
+      "reminder_minutes_before": 120,
+      "doctors": [
+        {
+          "id": "dr_rao",
+          "name": "Dr. K. Srinivasa Rao",
+          "specialty": "General physician",
+          "fee": 400,
+          "days": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "sessions": [
+            [
+              "10:00",
+              "13:00"
+            ],
+            [
+              "17:00",
+              "20:00"
+            ]
+          ],
+          "slot_minutes": 20,
+          "keywords": [
+            "fever",
+            "cold",
+            "cough",
+            "bp",
+            "blood pressure",
+            "sugar",
+            "diabetes",
+            "headache",
+            "stomach",
+            "general",
+            "checkup",
+            "check-up",
+            "weakness",
+            "జ్వరం",
+            "దగ్గు",
+            "జలుబు",
+            "షుగర్",
+            "బీపీ",
+            "बुखार",
+            "खांसी",
+            "जुकाम",
+            "शुगर",
+            "बीपी"
+          ]
+        },
+        {
+          "id": "dr_lakshmi",
+          "name": "Dr. P. Lakshmi",
+          "specialty": "Orthopaedics (bones and joints)",
+          "fee": 500,
+          "days": [
+            0,
+            2,
+            4,
+            5
+          ],
+          "sessions": [
+            [
+              "11:00",
+              "14:00"
+            ]
+          ],
+          "slot_minutes": 20,
+          "keywords": [
+            "knee",
+            "joint",
+            "back pain",
+            "bone",
+            "fracture",
+            "shoulder",
+            "neck",
+            "arthritis",
+            "ortho",
+            "మోకాలు",
+            "నడుము",
+            "ఎముక",
+            "కీళ్ల",
+            "घुटना",
+            "घुटने",
+            "कमर",
+            "हड्डी",
+            "जोड़"
+          ]
+        },
+        {
+          "id": "dr_imran",
+          "name": "Dr. S. Imran",
+          "specialty": "Eye specialist",
+          "fee": 450,
+          "days": [
+            1,
+            3,
+            5
+          ],
+          "sessions": [
+            [
+              "16:00",
+              "19:00"
+            ]
+          ],
+          "slot_minutes": 15,
+          "keywords": [
+            "eye",
+            "eyes",
+            "vision",
+            "cataract",
+            "spectacles",
+            "glasses",
+            "కళ్ళు",
+            "కన్ను",
+            "కంటి",
+            "आँख",
+            "आंख",
+            "चश्मा",
+            "मोतियाबिंद"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "book",
+          "kind": "appointment",
+          "title": {
+            "en": "Book appointment",
+            "te": "అపాయింట్‌మెంట్",
+            "hi": "अपॉइंटमेंट बुक करें"
+          }
+        },
+        {
+          "id": "visits",
+          "kind": "summary",
+          "title": {
+            "en": "My appointments",
+            "te": "నా అపాయింట్‌మెంట్లు",
+            "hi": "मेरे अपॉइंटमेंट"
+          }
+        },
+        {
+          "id": "callback",
+          "kind": "callback",
+          "title": {
+            "en": "Call me back",
+            "te": "నాకు కాల్ చేయండి",
+            "hi": "मुझे कॉल करें"
+          }
+        },
+        {
+          "id": "report",
+          "kind": "report",
+          "title": {
+            "en": "Report this scam",
+            "te": "మోసం రిపోర్ట్",
+            "hi": "धोखे की रिपोर्ट"
+          }
+        }
+      ],
+      "demo_record": {
+        "status": {
+          "booking_status": "none",
+          "amount_due_now": 0,
+          "advance_paid": 0,
+          "refund_pending": false,
+          "appointments": [],
+          "last_visit": "{today-40}"
+        },
+        "summary": {
+          "en": [
+            "No upcoming appointment.",
+            "Last visit: Dr. K. Srinivasa Rao on {today-40}.",
+            "Fees are paid at the reception after the visit. No advance is ever needed."
+          ],
+          "te": [
+            "రాబోయే అపాయింట్‌మెంట్ ఏదీ లేదు.",
+            "చివరి సందర్శన: {today-40}న Dr. K. Srinivasa Rao.",
+            "ఫీజు డాక్టర్‌ను కలిసిన తర్వాత రిసెప్షన్‌లో చెల్లించాలి. ఎప్పుడూ అడ్వాన్స్ అవసరం లేదు."
+          ],
+          "hi": [
+            "कोई आने वाला अपॉइंटमेंट नहीं है।",
+            "पिछली विज़िट: {today-40} को Dr. K. Srinivasa Rao।",
+            "फ़ीस विज़िट के बाद रिसेप्शन पर दी जाती है। कभी एडवांस नहीं लगता।"
+          ]
+        }
       }
     }
   ]

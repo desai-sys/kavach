@@ -103,6 +103,8 @@ def sheet_for_model(evidence: dict) -> str:
     keep = ["image_findings", "extracted", "domain_checks", "community_reports", "red_flags", "genuine_signals",
             "matched_playbooks", "verdict_floor", "suggested_actions"]
     sheet = {k: evidence.get(k) for k in keep}
+    if evidence.get("product_lookup"):
+        sheet["product_lookup"] = evidence["product_lookup"]
     if evidence.get("business_check"):
         sheet["business_check"] = kb.for_model(evidence["business_check"])
         sheet["buttons_after_reply"] = evidence.get("buttons_after_reply") or []

@@ -140,10 +140,12 @@ def invoke(payload: dict, context=None) -> dict:
             except Exception:
                 log.exception("Memory flush failed")
 
-    # 4. Always save the final verdict (never milder than the rules).
+    # 4. Always save the final verdict (never milder than the rules), unless this was only an everyday
+    #    request (a product link, an appointment) with nothing suspicious in it.
     final = guard.final_verdict(model_verdict, floor)
+    errand_only = (not floor and not req.model_verdict and any(a.startswith("errand_") for a in req.actions))
     try:
-        if req.verdict != final:
+        if req.verdict != final and not errand_only:
             flags = evidence.get("red_flags", [])
             playbooks = evidence.get("matched_playbooks") or []
             save_verdict(final,
@@ -157,7 +159,7 @@ def invoke(payload: dict, context=None) -> dict:
 
     # 5. Member business: buttons for the real action, and an anonymous signal back to the business.
     buttons, buttons_text = [], None
-    if business:
+    if business and not req.list_message:
         buttons = kb.buttons_for(business["business_id"], final, req.language, req.incident_id,
                                  is_customer=business["is_customer"])
         buttons_text = kb.buttons_text(business["business_id"], req.language)
@@ -185,6 +187,7 @@ def invoke(payload: dict, context=None) -> dict:
         "business": business["business"] if business else None,
         "buttons": buttons,
         "buttons_text": buttons_text,
+        "list": req.list_message,
         "incident_id": req.incident_id,
         "actions": req.actions,
         "checks": {**checks, "evidence_seconds": evidence.get("seconds"),

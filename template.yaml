@@ -162,6 +162,19 @@ Resources:
         - {AttributeName: phone, KeyType: RANGE}
       SSESpecification: {SSEEnabled: true}
 
+  # Member clinics: one item per booked appointment slot. Conditional writes stop double booking.
+  BookingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: kavach-bookings
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: business_id, AttributeType: S}
+        - {AttributeName: slot_id, AttributeType: S}
+      KeySchema:
+        - {AttributeName: business_id, KeyType: HASH}
+        - {AttributeName: slot_id, KeyType: RANGE}
+
   # Anonymous events for each business's fraud-intelligence report (no customer phone numbers).
   BusinessSignalsTable:
     Type: AWS::DynamoDB::Table
@@ -191,6 +204,7 @@ Resources:
           "dedupe_table": "${DedupeTable}",
           "business_records_table": "${BusinessRecordsTable}",
           "business_signals_table": "${BusinessSignalsTable}",
+          "bookings_table": "${BookingsTable}",
           "media_bucket": "${MediaBucket}",
           "whatsapp_phone_number_id": "${WhatsAppPhoneNumberId}",
           "meta_api_version": "${MetaApiVersion}",
@@ -229,6 +243,7 @@ Resources:
         - DynamoDBCrudPolicy: {TableName: !Ref DedupeTable}
         - DynamoDBCrudPolicy: {TableName: !Ref BusinessRecordsTable}
         - DynamoDBCrudPolicy: {TableName: !Ref BusinessSignalsTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref BookingsTable}
         - S3CrudPolicy: {BucketName: !Ref MediaBucket}
         - SSMParameterReadPolicy: {ParameterName: kavach/*}
         - Statement:
@@ -254,6 +269,13 @@ Resources:
             - Effect: Allow
               Action: [ec2:DescribeInstances]
               Resource: "*"
+            # Appointment reminders are scheduled when a slot is tapped.
+            - Effect: Allow
+              Action: [scheduler:CreateSchedule]
+              Resource: !Sub "arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule/default/kavach-*"
+            - Effect: Allow
+              Action: [iam:PassRole]
+              Resource: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/kavach-scheduler-role"
 
   EscalationFunction:
     Type: AWS::Serverless::Function
@@ -264,6 +286,7 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
         - DynamoDBCrudPolicy: {TableName: !Ref IncidentsTable}
+        - DynamoDBReadPolicy: {TableName: !Ref BookingsTable}
         - SSMParameterReadPolicy: {ParameterName: kavach/*}
         - Statement:
             - Effect: Allow
