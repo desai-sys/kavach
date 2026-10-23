@@ -64,7 +64,7 @@ portfolio and a phone number not yet registered on WhatsApp.
 
 ### 2. Agent (AgentCore)
 ```bash
-npm install -g @aws/agentcore
+npm install -g @aws/agentcore@0.31.1   # 1.0.0 changed the create command
 agentcore create --project-name KavachAgent --name Kavach --language Python \
   --framework Strands --model-provider Bedrock --memory longAndShortTerm --build CodeZip
 python scripts/install_agent.py KavachAgent
