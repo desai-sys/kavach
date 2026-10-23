@@ -70,13 +70,15 @@ Tap **Reserve my refill**.
 
 | Time | Scene | What judges should notice |
 | --- | --- | --- |
-| 0:00-0:15 | Problem: ₹22,495 crore lost in 2025; digital arrest targets the elderly | Real, Indian, daily |
-| 0:15-0:35 | Amma forwards message 1 and gets a Telugu verdict | WhatsApp in, reasoning, reply in her language |
-| 0:35-0:55 | Message 2: lookalike domain caught; message 3: real site checked in the browser | Agent tools, AgentCore Browser |
-| 0:55-1:35 | Message 6: "Nidhira confirms your policy is active"; tap My real policy; tap Report, the fraud desk email arrives | Checked against the business's records, one-tap real action, signal back to the business |
-| 1:35-2:10 | Voice note 4: Ravi's phone lights up with the alert template; he taps "I'm calling now"; Amma is told | Family loop, buttons, escalation timer |
-| 2:10-2:35 | Screenshot 5: golden-hour flow, bank email arrives, 1930 check-in | SES + WhatsApp working together |
-| 2:35-3:00 | Architecture diagram + district scam warning; "any bank, insurer, pharmacy or service company can join" | Multiple CDS services, a repeatable partner offering |
+| 0:00-0:15 | Problem: ₹22,495 crore lost to cyber fraud in 2025; over ₹3,000 crore to digital arrests, mostly the elderly | Real, Indian, daily |
+| 0:15-0:45 | Message 2: SBI lookalike link, Telugu verdict | WhatsApp in, evidence first, reply in her language |
+| 0:45-1:30 | Message 6: "Nidhira confirms your policy is active"; tap My real policy; tap Report, the fraud desk email arrives | Checked against the business's records, one-tap real action, WhatsApp to email |
+| 1:30-2:10 | Voice note 4: Ravi's phone lights up; he taps "I'm calling now"; Amma is told | End-to-end agentic loop, family buttons, escalation timer |
+| 2:10-2:30 | Screenshot 5: complaint text, bank email, "Did you call 1930?" 15 minutes later | WhatsApp, SES and timers together |
+| 2:30-3:00 | Architecture diagram; "any bank, insurer, pharmacy or service company can run Kavach" | Several CDS services with AWS AI services; a partner offering |
+
+Before recording: if the WhatsApp templates aren't approved yet, have Ravi's phone message Kavach first, so
+his alert can go as a normal message inside the 24-hour window. Blur real phone numbers in the edit.
 
 Run `python scripts/trigger_scam_wave.py --district Kurnool --summary "fake electricity disconnection messages asking you to call an officer"`
 and invoke `kavach-weekly-digest` with `{"phone": "+91..."}` to film the warning and digest without waiting.
