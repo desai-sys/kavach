@@ -153,7 +153,7 @@ python scripts/seed_demo.py --parent +9198XXXXXXXX --name "Lakshmi Amma" --langu
   --district Kurnool --bank SBI --guardian "Ravi,+9198XXXXXXXX,ravi@example.com"
 ```
 This also gives the parent a demo customer record at each of the four fictional member businesses
-(run it again to refresh the dates). Then message the Kavach number from the parent's phone; try the
+(refresh them any time with `--records-only`). Then message the Kavach number from the parent's phone; try the
 member-business messages in [docs/DEMO.md](docs/DEMO.md). Or test without WhatsApp:
 `python scripts/ask_agent.py --arn <ARN> --phone +9198XXXXXXXX "Is this real? Your SBI account will be blocked, update KYC at sbi-kyc-update.xyz"`
 
