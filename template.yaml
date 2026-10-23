@@ -33,6 +33,14 @@ Parameters:
     Type: Number
     Default: 3
     Description: "Reports of one scam type in one district within 24h that trigger a district warning"
+  OpsOwnerPhones:
+    Type: String
+    Default: ""
+    Description: "Optional. Comma-separated WhatsApp numbers (e.g. +9198XXXXXXXX) allowed to use 'aws ...' ops mode. Empty turns ops mode off."
+  OpsRegions:
+    Type: String
+    Default: ap-south-1
+    Description: "Comma-separated regions ops mode looks in for EC2 instances, e.g. ap-south-1,us-east-1"
 
 Globals:
   Function:
@@ -192,6 +200,8 @@ Resources:
           "scam_warning_template": "${ScamWarningTemplate}",
           "template_language": "${TemplateLanguage}",
           "wave_threshold": ${WaveThreshold},
+          "ops_owner_phones": "${OpsOwnerPhones}",
+          "ops_regions": "${OpsRegions}",
           "escalation_function_arn": "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:kavach-escalation",
           "scheduler_role_arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/kavach-scheduler-role",
           "community_function_name": "kavach-community-alert"
@@ -235,6 +245,14 @@ Resources:
               Resource: [!Ref AgentRuntimeArn, !Sub "${AgentRuntimeArn}/*"]
             - Effect: Allow
               Action: [ses:SendEmail]
+              Resource: "*"
+            # Ops mode: only these three EC2 actions, and only after the owner taps Yes.
+            # No terminate, no delete, no security or IAM changes.
+            - Effect: Allow
+              Action: [ec2:StartInstances, ec2:StopInstances, ec2:RebootInstances]
+              Resource: !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*"
+            - Effect: Allow
+              Action: [ec2:DescribeInstances]
               Resource: "*"
 
   EscalationFunction:

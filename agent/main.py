@@ -23,6 +23,8 @@ Flow (evidence first, model second, guard last):
   4. the verdict is always saved, even if the model forgot to call record_verdict
   5. member business   - buttons for the real action (sent by the inbound Lambda) and an anonymous
                          signal for the business's fraud report
+
+{"mode": "ops"} payloads (owner-only "aws ..." messages) go to ops.py instead.
 """
 from __future__ import annotations
 
@@ -39,6 +41,7 @@ import evidence as ev
 import guard
 import kavach_business as kb
 import kavach_common as kc
+import ops
 from kavach_context import start_request
 from kavach_memory import get_session_manager
 from prompts import build_system_prompt
@@ -67,6 +70,8 @@ def make_agent(user: dict, channel: str, session_manager):
 
 @app.entrypoint
 def invoke(payload: dict, context=None) -> dict:
+    if payload.get("mode") == "ops":  # owner-only AWS console; separate prompt, tools and memory
+        return ops.invoke(payload, context)
     started = time.time()
     user = payload.get("user") or {}
     user["phone"] = kc.normalize_phone(user.get("phone", ""))

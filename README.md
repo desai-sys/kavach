@@ -88,6 +88,25 @@ The demo ships with four **fictional** members, so no real company is impersonat
 | Dawaghar Pharmacy | pharmacy | "Order on hold, pay ₹1,250": nothing is out for delivery; the next refill is ₹412, paid on delivery |
 | Chamak Home Services | home services | "Pay ₹999 advance or your slot is cancelled": the booking is confirmed and Chamak never takes advances |
 
+## Ops mode: run the deployment from WhatsApp (owner only)
+
+The partner running Kavach can manage it, and their AWS account, from the same WhatsApp number. Messages that
+start with `aws` (or `ops`), typed by a number listed in the `OpsOwnerPhones` parameter, go to a separate ops
+agent with its own prompt, tools and memory. Everything else, including anything forwarded, still gets the
+scam check.
+
+```
+aws are my WhatsApp templates approved?        -> template status, SES sandbox or not, Lambda errors, today's checks
+aws how much have I spent this month?          -> Cost Explorer, top services
+aws which instances are running?               -> EC2 across the regions in OpsRegions
+aws stop dev-server                            -> "Stop dev-server (i-0abc...) in ap-south-1?"  [Yes, do it] [Cancel]
+```
+
+Safety: the ops agent only has view-only permissions, and calls that could return secrets or stored data are
+refused in code. It can only *request* a start, stop or reboot; the inbound Lambda runs it when the owner taps
+**Yes**, and each request is single-use and expires after 10 minutes. No Kavach role can terminate or delete
+anything or change security groups or IAM, so a misread message or a hijacked chat can't do lasting damage.
+
 ## Repository layout
 
 ```
@@ -98,6 +117,8 @@ agent/                    Kavach agent (Strands) for AgentCore Runtime
   prompts.py              system prompt (evidence sheet, investigation steps, safety rules, reply format)
   tools/investigate.py    analyze_media, check_domain, inspect_link, check_reputation, search_scam_playbooks
   tools/business.py       check_business_records, business_action (member businesses)
+  ops.py, tools/ops.py    owner-only ops mode: list_instances, aws_spend_this_month, kavach_status, aws_read,
+                          request_instance_action
   tools/act.py            alert_family, start_golden_hour, record_verdict
   playbooks.json          14 Indian scam playbooks with red flags and official facts
   kavach-agent-policy.json  extra IAM permissions for the runtime role
@@ -111,6 +132,7 @@ layers/common/            shared by the Lambda layer and the agent
   kavach_common.py        WhatsApp/SES/DynamoDB helpers
   kavach_business.py      member businesses: claims vs records, buttons, official actions, signals
   businesses.json         the four fictional demo members and their demo customer records
+  kavach_ops.py           ops mode: owner check, Yes/Cancel requests, runs the confirmed EC2 action
 tests/                    offline tests for the rules, the guard and the agent flow
 template.yaml             SAM stack for Mumbai
 email-inbound.yaml        optional SAM stack for Singapore
@@ -144,7 +166,7 @@ sam build
 sam deploy --guided --region ap-south-1 --capabilities CAPABILITY_NAMED_IAM
 ```
 Parameters: `WhatsAppPhoneNumberId`, `AgentRuntimeArn`, `SenderEmail` and `BankFraudDeskEmail`
-(both SES-verified). Then, in the End User Messaging Social console, set the WhatsApp Business Account's
+(both SES-verified). Optional: `OpsOwnerPhones` (your number, to turn on ops mode) and `OpsRegions`. Then, in the End User Messaging Social console, set the WhatsApp Business Account's
 **event destination** to the `InboundTopicArn` output.
 
 ### 4. Try it

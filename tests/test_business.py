@@ -279,6 +279,6 @@ def test_inbound_lambda_sends_buttons_after_reply(monkeypatch):
 
     sent = []
     monkeypatch.setattr(app.kc, "wa_buttons", lambda to, body, buttons: sent.append((to, body, buttons)))
-    app.send_business_buttons(PHONE, {"buttons": [{"id": "BIZ|x|y|-", "title": "Call me back"}], "buttons_text": "Hi"})
-    app.send_business_buttons(PHONE, {"reply": "no business"})
+    app.send_buttons(PHONE, {"buttons": [{"id": "BIZ|x|y|-", "title": "Call me back"}], "buttons_text": "Hi"})
+    app.send_buttons(PHONE, {"reply": "no business"})
     assert sent == [(PHONE, "Hi", [("BIZ|x|y|-", "Call me back")])]

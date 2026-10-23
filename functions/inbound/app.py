@@ -6,7 +6,9 @@ For every customer message it:
   1. de-duplicates (SNS can deliver twice),
   2. runs onboarding (language, consent, guardians) if needed,
   3. handles button taps (family "I'm calling" / "I've reached her", golden-hour check-ins,
-     member-business actions such as "My real policy" or "Report this scam"),
+     member-business actions such as "My real policy" or "Report this scam",
+     the owner's Yes / Cancel for an ops start/stop/reboot),
+  3b. sends "aws ..." messages from the owner's number to the ops agent (see kavach_ops.py),
   4. otherwise fetches media to S3, transcribes voice notes, calls the Kavach agent
      on AgentCore Runtime and sends the agent's reply back on WhatsApp, followed by the
      member business's buttons when the message was about one.
@@ -25,6 +27,7 @@ from botocore.exceptions import ClientError
 
 import kavach_business as kb
 import kavach_common as kc
+import kavach_ops as kops
 
 AGENT_RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 # The agent can take 30-90 s (vision + browser); default boto3 read timeout is 60 s.
@@ -124,6 +127,12 @@ def process_message(message: dict, profile_name: str | None) -> None:
 
     text = (message.get("text") or {}).get("body", "").strip()
 
+    # ---- owner-only AWS ops mode: "aws ..." typed (not forwarded) by a number in ops_owner_phones
+    ops_request = kops.ops_command(text, phone, forwarded=_is_forwarded(message))
+    if ops_request is not None:
+        handle_ops(phone, user, ops_request, message_id)
+        return
+
     # ---- onboarding
     if not user:
         kc.put_user({"phone": phone, "name": profile_name or "", "status": "new", "language": "en",
@@ -155,19 +164,32 @@ def process_message(message: dict, profile_name: str | None) -> None:
     result = call_agent(user, prompt, media, message_id)
     reply = (result or {}).get("reply") or kc.t("error", lang)
     kc.wa_text(phone, reply)
-    send_business_buttons(phone, result)
+    send_buttons(phone, result)
 
 
-def send_business_buttons(phone: str, result: dict | None) -> None:
-    """If the message was about a member business, offer its official actions as tap-to-reply buttons."""
+def handle_ops(phone: str, user: dict | None, request: str, message_id: str) -> None:
+    """Owner-only AWS console. Reads run in the ops agent; start/stop/reboot wait for a Yes tap."""
+    kc.wa_text(phone, "⚙️ On it…")
+    owner = user or {"phone": phone, "name": "", "language": "en", "guardians": []}
+    try:
+        result = call_agent(owner, request, [], message_id, mode="ops")
+    except Exception as exc:
+        print(f"Ops agent call failed: {exc!r}")
+        result = None
+    kc.wa_text(phone, (result or {}).get("reply") or "Sorry, that didn't work. Nothing was changed.")
+    send_buttons(phone, result)
+
+
+def send_buttons(phone: str, result: dict | None) -> None:
+    """Tap-to-reply buttons the agent asked for: a member business's actions, or an ops Yes / Cancel."""
     buttons = (result or {}).get("buttons") or []
     if not buttons:
         return
     try:
         kc.wa_buttons(phone, result.get("buttons_text") or "What would you like to do?",
                       [(b["id"], b["title"]) for b in buttons])
-    except Exception as exc:  # the verdict already went out; buttons are a bonus
-        print(f"Business buttons not sent: {exc!r}")
+    except Exception as exc:  # the reply already went out; buttons are a bonus
+        print(f"Buttons not sent: {exc!r}")
 
 
 # =========================================================================== onboarding & buttons
@@ -226,6 +248,12 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
             }.get(lang, ""))
             if user:
                 kc.alert_guardians(user, incident_id, "needs help reporting a payment fraud to 1930 right now")
+        return
+
+    if kind == "OPS":
+        # Owner's answer to "Stop dev-server?": OPS|yes|<token> or OPS|no|<token>. Runs here, not in the model.
+        answer, _, token = rest.partition("|")
+        _safe_text(phone, kops.handle_tap(phone, answer, token))
         return
 
     if kind == "BIZ" and user and user.get("status") == "active":
@@ -399,9 +427,10 @@ def build_prompt(message: dict, text: str, voice_text: str | None, media: list[d
     return "\n\n".join(parts)
 
 
-def call_agent(user: dict, prompt: str, media: list[dict], message_id: str) -> dict | None:
+def call_agent(user: dict, prompt: str, media: list[dict], message_id: str, mode: str | None = None) -> dict | None:
     digits = kc.phone_digits(user["phone"])
-    session_id = f"kavach-session-{digits}-{datetime.now(kc.IST).strftime('%Y%m%d')}"  # >= 33 chars
+    kind = "kavach-ops-session" if mode == "ops" else "kavach-session"
+    session_id = f"{kind}-{digits}-{datetime.now(kc.IST).strftime('%Y%m%d')}"  # >= 33 chars
     payload = {
         "prompt": prompt,
         "channel": "whatsapp",
@@ -409,6 +438,8 @@ def call_agent(user: dict, prompt: str, media: list[dict], message_id: str) -> d
         "media": media,
         "user": {k: user.get(k) for k in ("phone", "name", "language", "district", "bank", "guardians", "email")},
     }
+    if mode:
+        payload["mode"] = mode
     started = time.time()
     response = AGENTCORE.invoke_agent_runtime(
         agentRuntimeArn=AGENT_RUNTIME_ARN,
@@ -427,6 +458,11 @@ def call_agent(user: dict, prompt: str, media: list[dict], message_id: str) -> d
 
 
 # =========================================================================== helpers
+
+def _is_forwarded(message: dict) -> bool:
+    ctx = message.get("context") or {}
+    return bool(ctx.get("forwarded") or ctx.get("frequently_forwarded"))
+
 
 def _first_time_seen(message_id: str) -> bool:
     try:

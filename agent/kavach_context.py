@@ -24,6 +24,7 @@ class Request:
     reported: set = field(default_factory=set)  # identifiers already added to community reports
     evidence: dict | None = None
     actions: list = field(default_factory=list)
+    ops_pending: dict | None = None     # ops mode: the one start/stop/reboot waiting for the owner's Yes
 
     @property
     def phone(self) -> str:

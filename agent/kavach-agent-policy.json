@@ -4,55 +4,83 @@
     {
       "Sid": "ReadKavachConfig",
       "Effect": "Allow",
-      "Action": ["ssm:GetParameter"],
+      "Action": [
+        "ssm:GetParameter"
+      ],
       "Resource": "arn:aws:ssm:*:*:parameter/kavach/*"
     },
     {
       "Sid": "KavachTables",
       "Effect": "Allow",
-      "Action": ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query", "dynamodb:Scan"],
-      "Resource": ["arn:aws:dynamodb:*:*:table/kavach-*", "arn:aws:dynamodb:*:*:table/kavach-*/index/*"]
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:*:*:table/kavach-*",
+        "arn:aws:dynamodb:*:*:table/kavach-*/index/*"
+      ]
     },
     {
       "Sid": "KavachMedia",
       "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
       "Resource": "arn:aws:s3:::kavach-media-*/*"
     },
     {
       "Sid": "SendWhatsApp",
       "Effect": "Allow",
-      "Action": ["social-messaging:SendWhatsAppMessage"],
+      "Action": [
+        "social-messaging:SendWhatsAppMessage"
+      ],
       "Resource": "*"
     },
     {
       "Sid": "SendEmail",
       "Effect": "Allow",
-      "Action": ["ses:SendEmail", "ses:SendRawEmail"],
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+      ],
       "Resource": "*"
     },
     {
       "Sid": "EscalationTimers",
       "Effect": "Allow",
-      "Action": ["scheduler:CreateSchedule"],
+      "Action": [
+        "scheduler:CreateSchedule"
+      ],
       "Resource": "arn:aws:scheduler:*:*:schedule/default/kavach-*"
     },
     {
       "Sid": "PassSchedulerRole",
       "Effect": "Allow",
-      "Action": ["iam:PassRole"],
+      "Action": [
+        "iam:PassRole"
+      ],
       "Resource": "arn:aws:iam::*:role/kavach-scheduler-role"
     },
     {
       "Sid": "CommunityAlerts",
       "Effect": "Allow",
-      "Action": ["lambda:InvokeFunction"],
+      "Action": [
+        "lambda:InvokeFunction"
+      ],
       "Resource": "arn:aws:lambda:*:*:function:kavach-community-alert"
     },
     {
       "Sid": "ModelsForVisionAndAgent",
       "Effect": "Allow",
-      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
       "Resource": "*"
     },
     {
@@ -67,6 +95,52 @@
         "bedrock-agentcore:ConnectBrowserLiveViewStream",
         "bedrock-agentcore:ListBrowsers",
         "bedrock-agentcore:GetBrowser"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "OpsModeViewOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeInstanceStatus",
+        "ec2:DescribeRegions",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeAddresses",
+        "ce:GetCostAndUsage",
+        "ce:GetCostForecast",
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:GetMetricData",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:DescribeAlarms",
+        "lambda:ListFunctions",
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketLocation",
+        "rds:DescribeDBInstances",
+        "rds:DescribeDBClusters",
+        "cloudformation:DescribeStacks",
+        "cloudformation:ListStacks",
+        "cloudformation:DescribeStackEvents",
+        "dynamodb:ListTables",
+        "dynamodb:DescribeTable",
+        "ses:GetAccount",
+        "ses:ListEmailIdentities",
+        "social-messaging:ListLinkedWhatsAppBusinessAccounts",
+        "social-messaging:GetLinkedWhatsAppBusinessAccount",
+        "social-messaging:ListWhatsAppMessageTemplates",
+        "social-messaging:GetWhatsAppMessageTemplate",
+        "ecs:ListClusters",
+        "ecs:ListServices",
+        "ecs:DescribeClusters",
+        "ecs:DescribeServices",
+        "elasticloadbalancing:DescribeLoadBalancers",
+        "elasticloadbalancing:DescribeTargetHealth",
+        "autoscaling:DescribeAutoScalingGroups",
+        "sns:ListTopics",
+        "sqs:ListQueues",
+        "budgets:ViewBudget"
       ],
       "Resource": "*"
     }
