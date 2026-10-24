@@ -416,6 +416,7 @@ def build(text: str, media: list | None = None, user_phone: str = "", guardian_p
         "community_reports": {i: r for i, r in reputation.items() if r.get("reports")},
         "business_check": business,
         "product_lookup": shopping.lookup_from_findings(image_findings),
+        "doctor_request": doctor_request(text, ex, flags, forwarded),
         "red_flags": flags,
         "genuine_signals": genuine,
         "matched_playbooks": playbooks,
@@ -424,6 +425,38 @@ def build(text: str, media: list | None = None, user_phone: str = "", guardian_p
         "identifiers": identifiers,
         "seconds": round(time.time() - started, 1),
     }
+
+
+# ----------------------------------------------------------------------------- everyday: a doctor
+
+HEALTH_WORDS = ["doctor", "appointment", "clinic", "hospital", "unwell", "not feeling well", "sick", "pain", "fever",
+                "checkup", "check-up", "check up", "డాక్టర్", "డాక్టరు", "వైద్యుడ", "అపాయింట్", "ఆసుపత్రి", "హాస్పిటల్",
+                "క్లినిక్", "ఒంట్లో బాగా", "నొప్పి", "జ్వరం", "डॉक्टर", "डाक्टर", "अपॉइंटमेंट", "अस्पताल", "क्लिनिक",
+                "तबीयत", "बीमार", "दर्द", "बुखार"]
+NOT_A_BOOKING = ["money", "pay", "paid", "rs", "rs.", "₹", "upi", "otp", "fee", "loan", "insurance", "claim", "police",
+                 "cbi", "arrest", "said", "called me", "call from", "is this", "real", "fake", "scam", "fraud", "డబ్బు",
+                 "చెల్లించ", "కాల్ వచ్చ", "మోసం", "పోలీస్", "पैसे", "पैसा", "भुगतान", "कॉल आया", "धोखा", "पुलिस"]
+
+
+def doctor_request(text: str, ex: dict, flags: list, forwarded: bool) -> dict | None:
+    """The person's own request for a doctor ("I have fever since yesterday", "మోకాలు నొప్పి"), so Kavach can
+    offer appointment times even if the model forgets to. Never for forwarded text, links, numbers or money talk."""
+    words = text.split("User's message:", 1)[-1].strip()
+    low = words.lower()
+    if forwarded or flags or ex.get("links") or ex.get("upi_ids") or ex.get("mobile_numbers") or len(low) > 240:
+        return None
+    keywords = {k.lower() for p in kb.PROFILES.values() for d in p.get("doctors", []) for k in d.get("keywords", [])}
+    keywords |= {w.lower() for w in HEALTH_WORDS}
+    keywords.discard("general")
+
+    def has(word: str) -> bool:
+        if re.fullmatch(r"[a-z .-]+", word):
+            return re.search(rf"(?<![a-z]){re.escape(word)}(?![a-z])", low) is not None
+        return word in low
+
+    if not any(has(k) for k in keywords) or any(has(k) for k in NOT_A_BOOKING):
+        return None
+    return {"concern": words[:120]}
 
 
 # ----------------------------------------------------------------------------- reply grounding

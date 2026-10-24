@@ -92,9 +92,6 @@ def invoke(payload: dict, context=None) -> dict:
     req.evidence = evidence
     floor = evidence.get("verdict_floor")
     business = evidence.get("business_check")
-    if business:  # tell the model which buttons the user will see after its reply
-        evidence["buttons_after_reply"] = [b["title"] for b in kb.buttons_for(
-            business["business_id"], floor or "NEED_MORE_INFO", req.language, is_customer=business["is_customer"])]
     prompt_with_sheet = f"{prompt}\n\nEVIDENCE SHEET (Kavach's own checks, run before you):\n{guard.sheet_for_model(evidence)}"
 
     digits = kc.phone_digits(user["phone"]) or "anonymous"
@@ -140,6 +137,19 @@ def invoke(payload: dict, context=None) -> dict:
             except Exception:
                 log.exception("Memory flush failed")
 
+    # 3b. A person asking for a doctor gets the list of times even if the model forgot to look them up.
+    risky = (req.model_verdict or "") in ("SCAM", "LIKELY_SCAM", "SUSPICIOUS")
+    if evidence.get("doctor_request") and not floor and not risky and not req.list_message and not req.buttons:
+        try:
+            from tools.everyday import offer_slots
+            offer_slots(evidence["doctor_request"]["concern"])
+        except Exception:
+            log.exception("Could not offer appointment times")
+
+    # 3c. Buttons and lists carry their own instructions in the person's language; "tap the button below"
+    #     from the model is removed, so nobody looks for a button that never comes.
+    reply = guard.strip_button_talk(reply)
+
     # 4. Always save the final verdict (never milder than the rules), unless this was only an everyday
     #    request (a product link, an appointment) with nothing suspicious in it.
     final = guard.final_verdict(model_verdict, floor)
@@ -158,11 +168,12 @@ def invoke(payload: dict, context=None) -> dict:
         log.exception("Could not save the verdict")
 
     # 5. Member business: buttons for the real action, and an anonymous signal back to the business.
-    buttons, buttons_text = [], None
-    if business and not req.list_message:
+    buttons, buttons_text = list(req.buttons or []), req.buttons_text
+    if business and not req.list_message and not buttons:
         buttons = kb.buttons_for(business["business_id"], final, req.language, req.incident_id,
                                  is_customer=business["is_customer"])
         buttons_text = kb.buttons_text(business["business_id"], req.language)
+    if business:
         scam_ids = ev.identifiers_for_report(evidence) if final in ("SCAM", "LIKELY_SCAM") else []
         try:
             if req.incident_id:

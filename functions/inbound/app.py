@@ -4,7 +4,8 @@ End User Messaging Social -> SNS -> this Lambda.
 
 For every customer message it:
   1. de-duplicates (SNS can deliver twice),
-  2. runs onboarding (language, consent, guardians) if needed,
+  2. runs onboarding (language, consent) if needed, and settings any time (kavach_settings.py: a MENU list,
+     language, family contacts incl. shared contact cards, pause / turn on, linked services),
   3. handles button taps (family "I'm calling" / "I've reached her", golden-hour check-ins,
      member-business actions such as "My real policy" or "Report this scam",
      the owner's Yes / Cancel for an ops start/stop/reboot),
@@ -29,6 +30,7 @@ import kavach_business as kb
 import kavach_clinic as kclinic
 import kavach_common as kc
 import kavach_ops as kops
+import kavach_settings as ks
 
 AGENT_RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 # The agent can take 30-90 s (vision + browser); default boto3 read timeout is 60 s.
@@ -36,7 +38,7 @@ AGENT_RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 AGENTCORE = boto3.client("bedrock-agentcore", config=Config(read_timeout=300, connect_timeout=10,
                                                             retries={"max_attempts": 1}))
 
-LANG_BUTTONS = [("LANG|te", "తెలుగు"), ("LANG|hi", "हिन्दी"), ("LANG|en", "English")]
+LANG_BUTTONS = ks.LANG_BUTTONS
 
 CONSENT_TEXT = {
     "en": ("Kavach checks messages, links, screenshots and voice notes you forward, and tells you if they are a scam.\n\n"
@@ -53,14 +55,6 @@ CONSENT_BUTTONS = {
     "en": [("CONSENT|yes", "I agree"), ("CONSENT|no", "No thanks")],
     "te": [("CONSENT|yes", "అంగీకరిస్తున్నాను"), ("CONSENT|no", "వద్దు")],
     "hi": [("CONSENT|yes", "सहमत हूँ"), ("CONSENT|no", "नहीं")],
-}
-WELCOME = {
-    "en": ("You're protected. 🛡️ Forward me anything that looks suspicious: a message, link, screenshot, PDF or voice note.\n\n"
-           "To add a family member who should be alerted, send:\nGUARDIAN Ravi +919876543210 ravi@example.com"),
-    "te": ("మీకు రక్షణ ప్రారంభమైంది. 🛡️ అనుమానంగా అనిపించే ఏదైనా నాకు ఫార్వర్డ్ చేయండి: మెసేజ్, లింక్, స్క్రీన్‌షాట్, PDF లేదా వాయిస్ నోట్.\n\n"
-           "హెచ్చరిక అందుకోవాల్సిన కుటుంబ సభ్యుడిని చేర్చడానికి ఇలా పంపండి:\nGUARDIAN Ravi +919876543210 ravi@example.com"),
-    "hi": ("आप सुरक्षित हैं। 🛡️ जो भी संदिग्ध लगे, मुझे फ़ॉरवर्ड करें: मैसेज, लिंक, स्क्रीनशॉट, PDF या वॉइस नोट।\n\n"
-           "अलर्ट पाने वाले परिवार के सदस्य को जोड़ने के लिए भेजें:\nGUARDIAN Ravi +919876543210 ravi@example.com"),
 }
 GUARDIAN_ACK_TO_PARENT = {
     "calling": {
@@ -123,7 +117,7 @@ def process_message(message: dict, profile_name: str | None) -> None:
     elif mtype == "button":
         choice = message.get("button", {}).get("payload")
     if choice:
-        handle_choice(phone, user, profile_name, choice)
+        handle_choice(phone, user, profile_name, choice, message_id)
         return
 
     text = (message.get("text") or {}).get("body", "").strip()
@@ -141,14 +135,38 @@ def process_message(message: dict, profile_name: str | None) -> None:
         kc.wa_buttons(phone, "🛡️ Welcome to Kavach. Choose your language / భాష ఎంచుకోండి / भाषा चुनें",
                       LANG_BUTTONS)
         return
-    if text and handle_command(phone, user, text):
+
+    # ---- settings, any time and in any language: MENU, "change language", "STOP", "add Ravi 98765 43210",
+    #      a contact card from the phone book, or the answer to a question Kavach just asked
+    forwarded = _is_forwarded(message)
+    if mtype == "contacts" and ks.handle_contacts(user, message.get("contacts")):
+        return
+    if text and ks.handle_text(user, text, forwarded):
+        return
+    if text and handle_onboarding_text(phone, user, text):
+        return
+    if user.get("status") == "stopped":
+        ks.send_paused_nudge(user)
         return
     if user.get("status") != "active":
-        lang = user.get("language", "en")
-        kc.wa_buttons(phone, CONSENT_TEXT.get(lang, CONSENT_TEXT["en"]), CONSENT_BUTTONS.get(lang, CONSENT_BUTTONS["en"]))
+        send_consent(phone, user)
+        return
+    if text and ks.handle_awaiting(user, text, forwarded):
         return
 
     # ---- a real check
+    run_check(phone, user, message_id, message=message, text=text, mtype=mtype)
+
+
+def send_consent(phone: str, user: dict) -> None:
+    lang = user.get("language", "en")
+    kc.wa_buttons(phone, CONSENT_TEXT.get(lang, CONSENT_TEXT["en"]), CONSENT_BUTTONS.get(lang, CONSENT_BUTTONS["en"]))
+
+
+def run_check(phone: str, user: dict, message_id: str, message: dict | None = None, text: str = "",
+              mtype: str = "text", prompt: str | None = None) -> None:
+    """Fetch media, transcribe a voice note, ask the agent, then send its reply and any buttons or list."""
+    message = message or {}
     lang = user.get("language", "en")
     kc.wa_text(phone, kc.t("checking", lang))
 
@@ -161,7 +179,7 @@ def process_message(message: dict, profile_name: str | None) -> None:
                 item["transcript"] = voice_text
             media.append(item)
 
-    prompt = build_prompt(message, text, voice_text, media)
+    prompt = prompt or build_prompt(message, text, voice_text, media)
     result = call_agent(user, prompt, media, message_id)
     reply = (result or {}).get("reply") or kc.t("error", lang)
     kc.wa_text(phone, reply)
@@ -202,10 +220,14 @@ def send_buttons(phone: str, result: dict | None) -> None:
 
 # =========================================================================== onboarding & buttons
 
-def handle_choice(phone: str, user: dict | None, profile_name: str | None, choice: str) -> None:
+def handle_choice(phone: str, user: dict | None, profile_name: str | None, choice: str,
+                  message_id: str | None = None) -> None:
     kind, _, rest = choice.partition("|")
 
     if kind == "LANG":
+        if user and user.get("status") in ("active", "stopped"):  # already agreed: just switch the language
+            ks.set_language(user, rest)
+            return
         user = user or {"phone": phone, "name": profile_name or "", "guardians": [], "created_at": kc.now_iso()}
         user["language"] = rest if rest in ("te", "hi", "en") else "en"
         user["status"] = "pending_consent"
@@ -219,7 +241,7 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
         if rest == "yes":
             user.update(status="active", consent_at=kc.now_iso())
             kc.put_user(user)
-            kc.wa_text(phone, WELCOME[lang])
+            ks.send_welcome(user)
         else:
             user.update(status="declined")
             kc.put_user(user)
@@ -270,6 +292,13 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
         kclinic.handle_tap(user, choice)
         return
 
+    if kind == "SET" and user and user.get("status") in ("active", "stopped"):
+        # Settings menu taps (kavach_settings.py). Plain code; changes only the sender's own settings.
+        out = ks.handle_tap(user, choice)
+        if out.get("check") and user.get("status") == "active":
+            run_check(phone, user, message_id or f"tap-{int(time.time())}", prompt=out["check"])
+        return
+
     if kind == "BIZ" and user and user.get("status") == "active":
         # Member-business action: BIZ|<business_id>|<action_id>|<incident_id or ->. Plain code, no model call;
         # records are looked up by the sender's own number, never by the payload.
@@ -299,52 +328,33 @@ def handle_guardian_ack(guardian_phone: str, incident_id: str, action: str) -> N
     if action == "reached":
         _safe_text(guardian_phone, "Thank you. Kavach has closed the alert. 🙏")
     else:
-        _safe_text(guardian_phone, f"Thanks {guardian_name}. Kavach told them you're calling. Tap \"I've reached them\" when you have spoken.")
+        try:
+            kc.wa_buttons(guardian_phone, f"Thanks {guardian_name}. Kavach told them you're calling. "
+                                          "Tap below when you have spoken to them.",
+                          [(f"ACK|{incident_id}|reached", "I've reached them")])
+        except Exception as exc:
+            print(f"Ack button not sent: {exc!r}")
+            _safe_text(guardian_phone, f"Thanks {guardian_name}. Kavach told them you're calling.")
 
 
-def handle_command(phone: str, user: dict, text: str) -> bool:
-    """Tiny text commands for setup. Returns True if the text was a command."""
-    upper = text.upper()
-    lang = user.get("language", "en")
-
-    if upper in ("HI", "HELLO", "START", "నమస్తే", "नमस्ते") and user.get("status") in ("new", "declined"):
+def handle_onboarding_text(phone: str, user: dict, text: str) -> bool:
+    """Typed words from someone who hasn't agreed yet (new, declined or deciding). True if handled."""
+    if user.get("status") in ("active", "stopped"):
+        return False
+    found = ks.intent(text)
+    kind, arg = found if found else (None, "")
+    if kind in ("greet", "resume", "menu", "language"):
         kc.wa_buttons(phone, "🛡️ Welcome to Kavach. Choose your language / భాష ఎంచుకోండి / भाषा चुनें", LANG_BUTTONS)
         return True
-    if upper == "STOP":
-        user["status"] = "stopped"
+    if kind == "set_language":
+        user.update(language=arg, status="pending_consent")
         kc.put_user(user)
-        kc.wa_text(phone, "Kavach has stopped. Send HI to start again.")
+        send_consent(phone, user)
         return True
-    if upper.startswith("GUARDIAN "):
-        # GUARDIAN <name> <phone, spaces allowed> [email]
-        body = text[len("GUARDIAN"):].strip()
-        email_match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", body)
-        email = email_match.group(0) if email_match else ""
-        rest = body.replace(email, " ") if email else body
-        phone_match = re.search(r"\+?\d[\d\s-]{8,}\d", rest)
-        if not phone_match or len(re.sub(r"\D", "", phone_match.group(0))) < 10:
-            kc.wa_text(phone, "Please send it like this:\nGUARDIAN Ravi +919876543210 ravi@example.com")
-            return True
-        name = (rest[:phone_match.start()] + " " + rest[phone_match.end():]).strip()
-        guardian = {"name": re.sub(r"\s+", " ", name) or "Family", "phone": kc.normalize_phone(phone_match.group(0)),
-                    "email": email.lower()}
-        others = [g for g in user.get("guardians", []) if kc.normalize_phone(g.get("phone", "")) != guardian["phone"]]
-        user["guardians"] = others + [guardian]
+    if kind == "pause":
+        user["status"] = "declined"
         kc.put_user(user)
-        kc.wa_text(phone, f"✅ {guardian['name']} ({guardian['phone']}) will be alerted if something looks dangerous.")
-        return True
-    if upper.startswith("DISTRICT "):
-        user["district"] = text.split(maxsplit=1)[1].strip().title()
-        kc.put_user(user)
-        kc.wa_text(phone, f"✅ District saved: {user['district']}. You'll get warnings about scam waves near you.")
-        return True
-    if upper.startswith("BANK "):
-        user["bank"] = text.split(maxsplit=1)[1].strip()
-        kc.put_user(user)
-        kc.wa_text(phone, f"✅ Bank saved: {user['bank']}.")
-        return True
-    if upper.startswith("LANGUAGE"):
-        kc.wa_buttons(phone, "Choose your language / భాష ఎంచుకోండి / भाषा चुनें", LANG_BUTTONS)
+        kc.wa_text(phone, "OK. Kavach will not check your messages. Send HI any time to start again.")
         return True
     return False
 

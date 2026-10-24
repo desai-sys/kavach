@@ -79,7 +79,15 @@ records are always looked up by the sender's own WhatsApp number. Each check als
 signal (claims, lookalike domains, scammer identifiers, district; no customer phone numbers) to
 `kavach-business-signals` for the business's fraud-intelligence report.
 
-The demo ships with four **fictional** members, so no real company is impersonated:
+**How a customer's record reaches Kavach.** The customer opts in with the business (in its app, at its counter,
+or while renewing), and the business links a masked record to the mobile number registered with it. That is the
+same number as the customer's WhatsApp, which WhatsApp verified when they installed it, so only a message from
+their own phone can read their record, much like Indian banks run WhatsApp banking for existing customers. The
+customer sees every linked service in **Settings > Linked services** ("Linked 3 Oct via the Kalpavi Bank app;
+Kavach can see: account status, KYC date, last 2 transactions, masked") and can unlink it there. A business can
+also run Kavach in its own AWS account, so its records never leave it.
+
+The demo ships with five **fictional** members, so no real company is impersonated:
 
 | Business | Kind | A scam Kavach catches with its records |
 | --- | --- | --- |
@@ -98,6 +106,20 @@ booking anything on the AI's word alone: the person's own tap does that.
 | --- | --- | --- |
 | A photo or ad of a product ("is this a good deal?", "buy this") | Reads the product from the picture and replies with search links on the real amazon.in and flipkart.com; flags 70%+ discounts from sellers it can't verify | Links only: neither store offers an ordering API to outside apps, and Amazon's Product Advertising API 5.0 is deprecated |
 | "I need a doctor for my knee pain" | Picks the right doctor at the member clinic, sends a WhatsApp list of free times; the tap books it (a conditional write, so nobody gets the same slot), confirms on WhatsApp, emails the family through SES, and EventBridge sends a reminder with "I'm on my way" / "Cancel visit" | Fully working with the fictional Dhanvi Family Clinic; a real clinic joins as a member |
+
+## Settings any time, without commands
+
+Elderly users shouldn't have to remember `GUARDIAN Ravi +91…`. `MENU` (or `hi`, `మెనూ`, `मेनू`) opens a WhatsApp list:
+language, family contacts, add a family member, linked services, district, pause or turn on, and examples. Short
+requests in Telugu, Hindi or English work too ("change language", "భాష", "English", "STOP", "add Priya 98765
+43210"), a contact card shared from the phone book adds a family member, and changing the language never asks for
+consent again. Longer requests in the person's own words go to the agent, which opens the right menu
+(`open_settings`) or offers a **Yes, add** button (`add_family_contact`); nothing changes until the person taps.
+Forwarded messages are never treated as settings. All of this is plain code in `layers/common/kavach_settings.py`.
+
+Kavach's replies never tell people to tap a button that isn't there: the guard removes "tap the button below"
+lines (buttons and lists arrive with their own instructions), and a request for a doctor always gets the list of
+times (or a **Call me back** button when nothing is free), even if the model forgets to look them up.
 
 ## Ops mode: run the deployment from WhatsApp (owner only)
 
@@ -129,6 +151,7 @@ agent/                    Kavach agent (Strands) for AgentCore Runtime
   tools/investigate.py    analyze_media, check_domain, inspect_link, check_reputation, search_scam_playbooks
   tools/business.py       check_business_records, business_action (member businesses)
   tools/everyday.py       find_product_online, find_appointment_slots, my_appointments, cancel_appointment
+  tools/settings.py       open_settings, add_family_contact (show a menu or a Yes button; the tap changes it)
   shopping.py             official store links from a product in a photo or ad
   ops.py, tools/ops.py    owner-only ops mode: list_instances, aws_spend_this_month, kavach_status, aws_read,
                           request_instance_action
@@ -136,7 +159,7 @@ agent/                    Kavach agent (Strands) for AgentCore Runtime
   playbooks.json          14 Indian scam playbooks with red flags and official facts
   kavach-agent-policy.json  extra IAM permissions for the runtime role
 functions/                Lambda functions (Python 3.12, arm64)
-  inbound/                WhatsApp in: onboarding, consent, buttons, media, voice, calls the agent
+  inbound/                WhatsApp in: onboarding, consent, settings, buttons, media, voice, calls the agent
   escalation/             timer-driven family escalation and golden-hour check-in
   digest/                 Sunday family email
   community/              district scam-wave WhatsApp warning
@@ -147,6 +170,7 @@ layers/common/            shared by the Lambda layer and the agent
   businesses.json         the five fictional demo members and their demo customer records
   kavach_ops.py           ops mode: owner check, Yes/Cancel requests, runs the confirmed EC2 action
   kavach_clinic.py        clinic slots, booking (no double booking), confirmations, reminders
+  kavach_settings.py      settings menu, language, family contacts, pause, linked services (plain code)
 tests/                    offline tests for the rules, the guard and the agent flow
 template.yaml             SAM stack for Mumbai
 email-inbound.yaml        optional SAM stack for Singapore
@@ -203,7 +227,9 @@ aws ses set-active-receipt-rule-set --rule-set-name kavach-inbound --region ap-s
 ```
 
 ## Safety and privacy
-- Consent is collected on WhatsApp before any check; `STOP` turns Kavach off.
+- Consent is collected on WhatsApp before any check; `STOP` pauses Kavach and `hi` turns it back on.
+- Each member service a person is linked to is listed in Settings > Linked services, with what it shares, and can
+  be unlinked there.
 - Media is deleted from S3 after 7 days. Community reports store the scammer's identifiers, never the
   reporter's number.
 - Text inside screenshots and web pages is treated as untrusted evidence, never as instructions.

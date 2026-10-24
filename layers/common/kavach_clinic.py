@@ -188,9 +188,10 @@ def send_slot_list(user: dict, business_id: str, concern: str = "", prefix: str 
     lang = _lang(user)
     slots = free_slots(business_id, match_doctors(business_id, concern))
     name = kb.PROFILES[business_id]["name"]
-    if not slots:
+    if not slots:  # the text says "Tap Call me back", so send that button with it
         text = _t("no_slots", lang, name=name, days=DAYS_AHEAD)
-        kc.wa_text(user["phone"], (prefix + "\n" if prefix else "") + text)
+        callback = [(b["id"], b["title"]) for b in kb.buttons_for(business_id, None, lang) if "|callback|" in b["id"]]
+        kc.wa_buttons(user["phone"], (prefix + "\n" if prefix else "") + text, callback)
         return text
     lst = slot_list(business_id, slots, lang)
     if prefix:
@@ -374,6 +375,8 @@ def _save_record(business_id: str, phone: str, user: dict, add: dict | None = No
         status.update(booking_status="none")
         status.pop("booking_at", None)
     record.update(status=status, summary=summary, customer_name=user.get("name", ""), updated_at=kc.now_iso())
+    if not record.get("linked_at"):  # first booking through Kavach links the clinic (shown in Linked services)
+        record.update(linked_at=kc.now_iso()[:10], linked_via="kavach_booking")
     try:
         kc.table("business_records_table").put_item(Item=kc.clean_for_dynamo(record))
     except Exception as exc:

@@ -36,6 +36,16 @@
       "policies": {},
       "callback_hours": 2,
       "desk_email": "",
+      "link_channel": {
+        "en": "the Kalpavi Bank app",
+        "te": "Kalpavi Bank యాప్",
+        "hi": "Kalpavi Bank ऐप"
+      },
+      "shares_with_kavach": {
+        "en": "account status, KYC date, last 2 transactions (masked)",
+        "te": "ఖాతా స్థితి, KYC తేదీ, చివరి 2 లావాదేవీలు (నంబర్లు దాచి)",
+        "hi": "खाते की स्थिति, KYC की तारीख, पिछले 2 लेन-देन (नंबर छिपाकर)"
+      },
       "actions": [
         {
           "id": "status",
@@ -107,7 +117,8 @@
             "आपके खाते पर कुछ भी बकाया नहीं है।",
             "हाल के लेन-देन: {today-1} को ₹2,000 डेबिट (Sri Lakshmi Kirana को UPI), {today-6} को ₹15,000 पेंशन जमा।"
           ]
-        }
+        },
+        "linked_at": "{iso:today-21}"
       }
     },
     {
@@ -147,6 +158,16 @@
       "policies": {},
       "callback_hours": 4,
       "desk_email": "",
+      "link_channel": {
+        "en": "your Nidhira policy renewal",
+        "te": "Nidhira పాలసీ రిన్యూవల్",
+        "hi": "Nidhira पॉलिसी रिन्यूअल"
+      },
+      "shares_with_kavach": {
+        "en": "policy status, cover end date, next premium",
+        "te": "పాలసీ స్థితి, కవర్ ముగిసే తేదీ, తదుపరి ప్రీమియం",
+        "hi": "पॉलिसी की स्थिति, कवर खत्म होने की तारीख, अगला प्रीमियम"
+      },
       "actions": [
         {
           "id": "policy",
@@ -205,7 +226,8 @@
             "पिछला प्रीमियम ₹14,200, 14 Mar 2026 को भरा गया। अगला प्रीमियम ₹14,200, 15 Mar 2027 को देय है। अभी कुछ भी बकाया नहीं है।",
             "कोई रिफंड, बोनस या क्लेम भुगतान बाकी नहीं है।"
           ]
-        }
+        },
+        "linked_at": "{iso:today-40}"
       }
     },
     {
@@ -241,6 +263,16 @@
       },
       "callback_hours": 2,
       "desk_email": "",
+      "link_channel": {
+        "en": "the Dawaghar store counter",
+        "te": "Dawaghar స్టోర్ కౌంటర్",
+        "hi": "Dawaghar स्टोर काउंटर"
+      },
+      "shares_with_kavach": {
+        "en": "refill dates and amounts, delivery status",
+        "te": "రీఫిల్ తేదీలు, మొత్తాలు, డెలివరీ స్థితి",
+        "hi": "रीफ़िल की तारीखें और रकम, डिलीवरी की स्थिति"
+      },
       "actions": [
         {
           "id": "refill",
@@ -307,7 +339,8 @@
             "पिछला ऑर्डर {today-25} को डिलीवर हुआ, भुगतान डिलीवरी पर हुआ।",
             "अभी कोई ऑर्डर डिलीवरी के लिए नहीं निकला है और कुछ भी बकाया नहीं है।"
           ]
-        }
+        },
+        "linked_at": "{iso:today-55}"
       }
     },
     {
@@ -345,6 +378,16 @@
       },
       "callback_hours": 1,
       "desk_email": "",
+      "link_channel": {
+        "en": "the Chamak app",
+        "te": "Chamak యాప్",
+        "hi": "Chamak ऐप"
+      },
+      "shares_with_kavach": {
+        "en": "your bookings, visit code and payments",
+        "te": "మీ బుకింగ్‌లు, విజిట్ కోడ్, చెల్లింపులు",
+        "hi": "आपकी बुकिंग, विज़िट कोड और भुगतान"
+      },
       "actions": [
         {
           "id": "booking",
@@ -402,7 +445,8 @@
             "प्रोफ़ेशनल: Suresh K. (ID सत्यापित)।"
           ]
         },
-        "visit_code": "{visit_code}"
+        "visit_code": "{visit_code}",
+        "linked_at": "{iso:today-9}"
       }
     },
     {
@@ -565,6 +609,16 @@
           ]
         }
       ],
+      "link_channel": {
+        "en": "the Dhanvi clinic reception",
+        "te": "Dhanvi క్లినిక్ రిసెప్షన్",
+        "hi": "Dhanvi क्लिनिक रिसेप्शन"
+      },
+      "shares_with_kavach": {
+        "en": "your appointments and visit dates (no medical reports)",
+        "te": "మీ అపాయింట్‌మెంట్లు, విజిట్ తేదీలు (మెడికల్ రిపోర్టులు కాదు)",
+        "hi": "आपके अपॉइंटमेंट और विज़िट की तारीखें (मेडिकल रिपोर्ट नहीं)"
+      },
       "actions": [
         {
           "id": "book",
@@ -628,7 +682,8 @@
             "पिछली विज़िट: {today-40} को Dr. K. Srinivasa Rao।",
             "फ़ीस विज़िट के बाद रिसेप्शन पर दी जाती है। कभी एडवांस नहीं लगता।"
           ]
-        }
+        },
+        "linked_at": "{iso:today-30}"
       }
     }
   ]

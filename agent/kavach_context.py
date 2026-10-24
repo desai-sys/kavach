@@ -26,6 +26,8 @@ class Request:
     actions: list = field(default_factory=list)
     ops_pending: dict | None = None     # ops mode: the one start/stop/reboot waiting for the owner's Yes
     list_message: dict | None = None    # a WhatsApp list (e.g. appointment times) to send after the reply
+    buttons: list | None = None         # quick-reply buttons a tool asked for ([{"id", "title"}]), e.g. a
+    buttons_text: str | None = None     # Yes/No before adding a family contact; replace business buttons
 
     @property
     def phone(self) -> str:

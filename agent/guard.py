@@ -105,11 +105,66 @@ def sheet_for_model(evidence: dict) -> str:
     sheet = {k: evidence.get(k) for k in keep}
     if evidence.get("product_lookup"):
         sheet["product_lookup"] = evidence["product_lookup"]
+    if evidence.get("doctor_request"):
+        sheet["doctor_request"] = evidence["doctor_request"]
     if evidence.get("business_check"):
         sheet["business_check"] = kb.for_model(evidence["business_check"])
-        sheet["buttons_after_reply"] = evidence.get("buttons_after_reply") or []
     return json.dumps(sheet, ensure_ascii=False, indent=1, default=str)
 
 
 def final_verdict(model_verdict: str | None, floor: str | None) -> str:
     return ev.more_severe(model_verdict, floor) or "NEED_MORE_INFO"
+
+
+# ----------------------------------------------------------------------------- talk about buttons
+
+# Kavach's code sends buttons and lists with their own instructions, in the person's language. A reply that
+# says "tap the button below" when nothing follows leaves an elderly user looking for a button that isn't there,
+# so lines that point at buttons are removed. Warnings such as "don't tap any link or button" are kept.
+_TAP = r"(tap|click|press|select|choose|pick|ట్యాప్|టాప్|నొక్క|క్లిక్|ఎంచుకో|టచ్|टैप|दबा|क्लिक|चुन)"
+_POINTER = r"(button|below|list\b|menu|బటన్|క్రింద|కింద|జాబితా|లిస్ట్|మెనూ|बटन|नीचे|सूची|लिस्ट|मेनू)"
+_NOT = (r"(don'?t|do not|never|avoid|వద్దు|చేయకండి|చేయవద్దు|నొక్కకండి|తెరవకండి|ఇవ్వకండి|పంపకండి|చెప్పకండి|"
+        r"मत|न करें|न दबाएँ|न खोलें|नहीं)")
+_QUOTE = r"(?<!\w)['‘\"“][^'’\"”\n]{2,40}['’\"”](?!\w)"  # a quoted label, not the ' in "it's"
+_QUOTED_BELOW = _QUOTE + r"\s*(below|క్రింద|కింద|नीचे)"
+
+
+def strip_button_talk(reply: str) -> str:
+    """Drop lines that tell the person to tap a button or pick from a list, and renumber what is left."""
+    lines = (reply or "").split("\n")
+    drop = []
+    for line in lines:
+        low = line.lower()
+        outside_quotes = re.sub(_QUOTE, " ", low)
+        pointing = ((re.search(_TAP, low) and re.search(_POINTER, low)) or re.search(_QUOTED_BELOW, low)
+                    or (re.search(_QUOTE, low) and re.search(_TAP, outside_quotes)))  # "Tap 'My real policy'"
+        drop.append(bool(pointing) and not re.search(_NOT, low))
+    # A heading ("What to do now?") whose every step was about buttons goes too.
+    for i, line in enumerate(lines):
+        if drop[i] or not _is_heading(line):
+            continue
+        block = []
+        for j in range(i + 1, len(lines)):
+            if not lines[j].strip() or _is_heading(lines[j]):
+                break
+            block.append(j)
+        if block and all(drop[j] for j in block):
+            drop[i] = True
+    out, n = [], 0
+    for line, gone in zip(lines, drop):
+        if gone:
+            continue
+        m = re.match(r"^(\s*)(\d+)([.)])\s", line)
+        if m:  # keep "1. 2. 3." in order after removals
+            n += 1
+            line = f"{m.group(1)}{n}{m.group(3)} " + line[m.end():]
+        elif line.strip() and not line.lstrip().startswith(("•", "-")):
+            n = 0
+        out.append(line)
+    text = re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+    return text or (reply or "").strip()
+
+
+def _is_heading(line: str) -> bool:
+    bare = line.strip().strip("*_ ")
+    return 0 < len(bare) <= 40 and bare[-1:] in ("?", ":", "：") and not re.match(r"^\d+[.)]", bare)

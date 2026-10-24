@@ -39,8 +39,18 @@ desk and family, alerts Ravi, and asks "Did you call 1930?" 15 minutes later.
 
 ## Member businesses (all five are fictional)
 
-`seed_demo.py` gives Amma a customer record at Kalpavi Bank, Nidhira Health Insurance, Dawaghar Pharmacy
-and Chamak Home Services. After each verdict, Kavach sends that business's buttons.
+`seed_demo.py` gives Amma a customer record at Kalpavi Bank, Nidhira Health Insurance, Dawaghar Pharmacy,
+Chamak Home Services and Dhanvi Family Clinic. After each verdict, Kavach sends that business's buttons.
+
+**Where do these records come from?** Each business joined Kavach and, with Amma's consent (in its own app, at
+its counter or when she renewed her policy), linked her record to the mobile number registered with it, which is
+the same number as her WhatsApp. WhatsApp itself verified that number when she installed it, so a message from
+that number can only come from her phone. Kavach only ever sees a small slice (status, due dates, a masked recent
+transaction), never passwords, PINs or OTPs. Show this on camera before message 6:
+
+**5b. "How does Kavach know?" (expect: a list of linked services with dates and channels)**
+Send `MENU`, tap **Linked services**, then **Nidhira Health Insurance**: "Linked <date> via Nidhira policy
+renewal. Kavach can see: policy status, cover end date, next premium", with an **Unlink** button.
 
 **6. Insurance "lapse" (expect: scam; "Nidhira confirms your policy is active until 31 Mar 2027")**
 > Dear Nidhira Health customer, your policy NHI-2025-004471 will lapse today. Pay premium Rs 14,200 now at
@@ -76,7 +86,13 @@ Screenshot any social-media ad for a branded product with a big "% OFF" and send
 > I need to see a doctor for my knee pain
 
 Tap a time: Amma gets the confirmation and token, Ravi's inbox gets the email, and a reminder arrives
-2 hours before (book a slot about 2 hours 15 minutes ahead to see it during filming).
+2 hours before (book a slot about 2 hours 15 minutes ahead to see it during filming). Dhanvi is a member clinic:
+it shares its doctors' timetable with Kavach and takes bookings through it. Today there is one demo clinic in
+Kurnool; more member clinics would be matched by the district Amma set.
+
+**12. Settings in her own words (expect: no commands to type)**
+Send `English`, then `తెలుగు` (language switches, Kavach stays on). Share Ravi's contact card from the phone book
+and tap **Yes, add**. Send `STOP`, then `hi`.
 
 ## 3-minute video outline
 
@@ -84,7 +100,7 @@ Tap a time: Amma gets the confirmation and token, Ravi's inbox gets the email, a
 | --- | --- | --- |
 | 0:00-0:15 | Problem: ₹22,495 crore lost to cyber fraud in 2025; over ₹3,000 crore to digital arrests, mostly the elderly | Real, Indian, daily |
 | 0:15-0:45 | Message 2: SBI lookalike link, Telugu verdict | WhatsApp in, evidence first, reply in her language |
-| 0:45-1:30 | Message 6: "Nidhira confirms your policy is active"; tap My real policy; tap Report, the fraud desk email arrives | Checked against the business's records, one-tap real action, WhatsApp to email |
+| 0:45-1:30 | 5b for 5 seconds (Linked services: her insurer linked her policy to this number, with her consent). Then message 6: "Nidhira confirms your policy is active"; tap My real policy; tap Report, the fraud desk email arrives | Where the data comes from, checked against the business's records, one-tap real action, WhatsApp to email |
 | 1:30-2:10 | Voice note 4: Ravi's phone lights up; he taps "I'm calling now"; Amma is told | End-to-end agentic loop, family buttons, escalation timer |
 | 2:10-2:30 | Screenshot 5: complaint text, bank email, "Did you call 1930?" 15 minutes later | WhatsApp, SES and timers together |
 | 2:30-3:00 | Architecture diagram; "any bank, insurer, pharmacy or service company can run Kavach" | Several CDS services with AWS AI services; a partner offering |

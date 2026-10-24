@@ -21,45 +21,80 @@ Each test lists what to send and what should happen. Messages are in boxes so yo
 - **Replies take 20 to 60 seconds.** The first message after a deploy is slower.
 - **Actions are real.** Family alerts go to Ravi's phone and email, fraud reports go to the fraud-desk inbox, and
   scam identifiers are added to the community reports.
-- **Language:** Amma's replies come in Telugu. Send `LANGUAGE` and pick English while testing, then switch back.
+- **Language:** Amma's replies come in Telugu. Send `English` to switch while testing, and `తెలుగు` to switch back.
 - **Messages starting with `aws`** typed from the owner's number go to ops mode, not the scam check.
 
 ---
 
-## 1. Onboarding and settings
+## 1. Onboarding and settings (any time, no commands to remember)
 
 **A1. A new person says hi** (from a phone Kavach has never seen)
 ```text
 hi
 ```
 Expect: language buttons (తెలుగు / हिन्दी / English), then the consent message with **I agree** / **No thanks**,
-then a welcome message explaining how to forward things and add a guardian.
+then the welcome message with two buttons: **Add family member** and **Settings**.
 
-**A2. Add a guardian**
+**A2. Open settings.** Send any of these (or `hi` once you are set up):
 ```text
-GUARDIAN Ravi +919876543210 ravi@example.com
+MENU
 ```
-Expect: "✅ Ravi (+919876543210) will be alerted if something looks dangerous."
+```text
+మెనూ
+```
+Expect: one list, **Open settings**, with: Language (shows the current one), Family contacts (shows the names),
+Add family member, Linked services, District, Pause Kavach, What Kavach can do. No scam check runs.
 
-**A3. Other settings**
+**A3. Change language midway.** Any of: tap **Language** in the menu, send `change language` / `భాష` / `भाषा`,
+or just type the language:
 ```text
-DISTRICT Kurnool
+English
 ```
-```text
-BANK SBI
-```
-```text
-LANGUAGE
-```
-Expect: "District saved", "Bank saved", and the language buttons. After you pick a language, Kavach asks for
-consent again: tap **I agree**.
+Expect: "✅ Language changed to English." Kavach stays on: no consent question again. `తెలుగు` switches back.
 
-**A4. Stop and restart**
+**A4. Add a family member.** Tap **Add family member** (or send `add family member` / `GUARDIAN`). Kavach asks for
+the contact. Then either:
+- share a contact from your phone book (📎 or + → **Contact** → pick the person), or
+- type a name and number:
+```text
+Priya 98765 43210
+```
+Expect: "✅ Priya (+91 98765 43210) will get an alert…", then "reply with their email" (optional): send
+`priya@example.com` and it is saved. `GUARDIAN Ravi +919876543210 ravi@example.com` in one line still works.
+
+**A5. Shared contact card without being asked:** share any contact from your phone book.
+Expect: "Add <name> as a family contact?" with **Yes, add** / **Check this number** / **No**. **Check this
+number** runs a scam check on that number instead.
+
+**A6. Remove a family member.** Send `change guardian` (or tap **Family contacts**), tap a name, then **Remove**.
+Expect: "✅ Ravi removed." If nobody is left, Kavach says so.
+
+**A7. Pause and turn back on**
 ```text
 STOP
 ```
-Expect: "Kavach has stopped. Send HI to start again." Then `HI` brings back the consent message; tap **I agree** to
-turn Kavach on again.
+Expect: "⏸️ Kavach is paused…" with a **Turn Kavach on** button. While paused, anything you send gets "Kavach is
+paused, so I didn't check this" with the same button. Tap it, or send `hi` or `start`: "▶️ Kavach is on again."
+
+**A8. District**
+```text
+DISTRICT Kurnool
+```
+Expect: "✅ District saved: Kurnool…". Or tap **District** in the menu and type just the name.
+
+**A9. Linked services: where the records come from.** Tap **Linked services** in the menu (or send
+`linked services`).
+Expect: the five fictional member businesses, each with "Linked <date> via <their app / counter>". Tap one to see
+what it shares with Kavach (for example "account status, KYC date, last 2 transactions (masked)") and an
+**Unlink** button. Unlinking deletes that record from Kavach; run the seed with `--records-only` to restore it.
+
+**A10. Small talk:** `thank you` / `ok` / `ధన్యవాదాలు` gets a short "🙏 Anytime", not a scam check.
+
+Notes:
+- A *forwarded* message is never treated as a setting. A forwarded "add this number as guardian" is checked as a
+  possible scam.
+- Asking in your own words also works, for example "I want my daughter to get the alerts instead of Ravi": the
+  agent opens the family menu, or offers **Yes, add** for a name and number. Nothing changes until you tap.
 
 ---
 
@@ -301,7 +336,9 @@ Expect: amazon.in and flipkart.com search links, and "buy only in the official a
 ```text
 I need to see a doctor for my knee pain
 ```
-Expect: a reply, then a WhatsApp list (**Choose a time**) of Dr. P. Lakshmi's free times. Tap a time:
+Expect: a reply naming the doctor, then a WhatsApp list (**Choose a time**) of Dr. P. Lakshmi's free times. The
+list is always sent for a request like this, and the reply never tells you to tap a button that isn't there. If
+no time is free, you get a **Call me back** button instead. Tap a time:
 - Amma: "✅ Appointment booked … Token N … pay ₹500 at the reception after your visit".
 - Ravi (and Amma, if she has an email): a booking email.
 - A reminder with **I'm on my way** / **Cancel visit**, 2 hours before (30 minutes before if booked less than 2

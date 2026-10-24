@@ -40,9 +40,15 @@ def find_appointment_slots(concern: str, clinic: str = "") -> str:
         concern: The health problem or doctor needed, in English, e.g. "knee pain", "fever", "eye check-up".
         clinic: Optional clinic name. Default: the member clinic.
     """
+    return json.dumps(offer_slots(concern, clinic), ensure_ascii=False)
+
+
+def offer_slots(concern: str, clinic: str = "") -> dict:
+    """Find the doctor and free times, and queue the WhatsApp list (or a Call me back button if nothing is free).
+    Also called by main.py when someone asks for a doctor and the model didn't look for times itself."""
     clinics = kclinic.clinic_ids()
     if not clinics:
-        return json.dumps({"error": "No member clinic is set up."})
+        return {"error": "No member clinic is set up."}
     business_id = kb.find(clinic) if clinic else None
     business_id = business_id if business_id in clinics else clinics[0]
     p = kb.PROFILES[business_id]
@@ -51,19 +57,24 @@ def find_appointment_slots(concern: str, clinic: str = "") -> str:
     try:
         slots = kclinic.free_slots(business_id, doctors)
     except Exception as exc:
-        return json.dumps({"error": f"Could not read the clinic's diary ({type(exc).__name__})."})
+        return {"error": f"Could not read the clinic's diary ({type(exc).__name__})."}
     if slots:
         req.list_message = kclinic.slot_list(business_id, slots, req.language)
-    req.actions.append("errand_appointment")
-    return json.dumps({
+    else:  # nothing free: offer the clinic's call-back, so "tap Call me back" has a real button
+        req.buttons = [b for b in kb.buttons_for(business_id, None, req.language) if "|callback|" in b["id"]]
+        req.buttons_text = kb.buttons_text(business_id, req.language)
+    if "errand_appointment" not in req.actions:
+        req.actions.append("errand_appointment")
+    return {
         "clinic": p["name"], "address": p.get("address", ""),
         "doctors": [{"name": d["name"], "specialty": d["specialty"], "fee_inr": d["fee"]} for d in doctors],
         "free_times": [f"{s['when']}: {s['doctor']}" for s in slots[:6]],
         "how_it_works": ("Kavach sends a list of these times right after your reply. The appointment is booked only "
                          "when the person taps a time; do not say it is booked." if slots else
-                         "No free times in the next 3 days; suggest the clinic's 'Call me back' option."),
+                         "No free times in the next 3 days. Kavach offers the clinic's call-back right after your "
+                         "reply."),
         "fee_rule": p["how_you_pay"],
-    }, ensure_ascii=False)
+    }
 
 
 @tool

@@ -257,7 +257,7 @@ def test_agent_sees_records_and_returns_buttons(records, monkeypatch):
     monkeypatch.setattr(main, "make_agent", lambda *_a: agent)
     out = main.invoke({"prompt": "User's message:\n" + BUSINESS_SCAMS[0][1], "user": dict(USER), "message_id": "m1"})
     sheet = agent.calls[0]
-    assert '"business_check"' in sheet and "active until 31 Mar 2027" in sheet and "buttons_after_reply" in sheet
+    assert '"business_check"' in sheet and "active until 31 Mar 2027" in sheet and "buttons_after_reply" not in sheet
     assert out["business"] == "Nidhira Health Insurance"
     assert [b["title"] for b in out["buttons"]][-1] == "మోసం రిపోర్ట్"
     assert out["verdict"] == "LIKELY_SCAM" and not out["checks"]["retried"]
