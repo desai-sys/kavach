@@ -6,8 +6,8 @@ Usage:
     python scripts/install_agent.py ../KavachAgent --agent Kavach
 
 What it does:
-  1. copies agent/ and the shared layers/common files (kavach_common.py, kavach_business.py,
-     businesses.json, kavach_ops.py) into <project>/app/<agent>/ (replacing the generated main.py),
+  1. copies agent/ and every shared layers/common file (kavach_*.py and businesses.json) into
+     <project>/app/<agent>/ (replacing the generated main.py),
   2. adds playwright to the agent's pyproject.toml (for AgentCore Browser),
   3. adds kavach-agent-policy.json and KAVACH_CONFIG_PARAM to the runtime in agentcore.json.
 Then run `agentcore deploy` inside the project.
