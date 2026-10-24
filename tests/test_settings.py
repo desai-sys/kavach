@@ -272,7 +272,8 @@ def test_remove_a_family_member(wa):
     wa.put_user(active_user())
     wa.send("change guardian")
     kind, _body, sections, _button, _to = wa.last()
-    assert kind == "list" and [r["id"] for r in sections[0]["rows"]] == ["SET|g|919800000002", "SET|add"]
+    assert kind == "list" and [r["id"] for r in sections[0]["rows"]] == ["SET|g|919800000002", "SET|add",
+                                                                         "SET|testalert"]
     wa.send(choice="SET|g|919800000002")
     assert [b[0] for b in wa.last()[2]] == ["SET|rm|919800000002", "SET|keep"]
     wa.send(choice="SET|rm|919800000002")
@@ -433,3 +434,31 @@ def test_agent_settings_tools_only_show_menus(monkeypatch):
     start_request(user=active_user(language="en"))
     settings_tools.open_settings("pause")
     assert [b["id"] for b in current().buttons] == ["SET|pause", "SET|keep"]
+
+
+def test_test_alert_reports_each_family_member(wa, monkeypatch):
+    wa.put_user(active_user(language="en", guardians=[
+        {"name": "Ravi", "phone": RAVI}, {"name": "Shikha", "phone": "+919811111111"}]))
+
+    def fake_alert(user, incident_id, summary, guardians=None):
+        assert incident_id == "test-919121095635" and "test" in summary
+        kc.LAST_ALERT_RESULTS[:] = [
+            {"name": "Ravi", "phone": RAVI, "ok": True, "how": "message", "error": None},
+            {"name": "Shikha", "phone": "+919811111111", "ok": False, "how": None,
+             "error": "ValidationException: template not found"}]
+        return [RAVI]
+
+    monkeypatch.setattr(kc, "alert_guardians", fake_alert)
+    wa.send(choice="SET|testalert")
+    text = wa.last()[1]
+    assert "Ravi (+91 98000 00002): ✅ sent" in text and "Shikha (+91 98111 11111): ❌" in text
+    assert "template not found" in text
+
+
+def test_guardian_tapping_a_test_alert_closes_the_loop(wa):
+    import app
+
+    wa.put_user(active_user(language="en"))
+    app.handle_choice(RAVI, None, "Ravi", "ACK|test-919121095635|calling")
+    assert ("text", "✅ Test received, thank you. Real Kavach alerts look just like this one.", RAVI) in wa.sent
+    assert wa.last() == ("text", "✅ Ravi received the test alert. Family alerts are working.", PHONE)

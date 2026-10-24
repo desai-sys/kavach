@@ -115,7 +115,17 @@ requests in Telugu, Hindi or English work too ("change language", "భాష", "
 43210"), a contact card shared from the phone book adds a family member, and changing the language never asks for
 consent again. Longer requests in the person's own words go to the agent, which opens the right menu
 (`open_settings`) or offers a **Yes, add** button (`add_family_contact`); nothing changes until the person taps.
-Forwarded messages are never treated as settings. All of this is plain code in `layers/common/kavach_settings.py`.
+Forwarded messages are never treated as settings. **Family contacts > Send a test alert** sends each family
+member a real alert marked as a test and reports, per person, whether WhatsApp accepted it. All of this is plain
+code in `layers/common/kavach_settings.py`.
+
+Replies always come in the language the person chose: each turn tells the model the language, and a reply in
+another script (for example from remembered Telugu conversations) is rewritten once.
+
+Family alerts don't depend on the model remembering to send them: when the person's own words show a scam
+happening now, code sends the alert. Guardians who messaged Kavach in the last 24 hours get a normal message
+(no template needed), others the approved template. If WhatsApp refuses an alert, immediately or minutes later,
+the person is told to call that family member themselves.
 
 Kavach's replies never tell people to tap a button that isn't there: the guard removes "tap the button below"
 lines (buttons and lists arrive with their own instructions), and a request for a doctor always gets the list of

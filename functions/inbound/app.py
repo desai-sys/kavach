@@ -316,6 +316,14 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
 
 
 def handle_guardian_ack(guardian_phone: str, incident_id: str, action: str) -> None:
+    if incident_id.startswith("test-"):  # a test alert from Settings > Family contacts
+        _safe_text(guardian_phone, "✅ Test received, thank you. Real Kavach alerts look just like this one.")
+        protected = kc.normalize_phone(incident_id[len("test-"):])
+        parent = kc.get_user(protected) or {}
+        who = next((g.get("name") for g in parent.get("guardians", [])
+                    if kc.normalize_phone(g.get("phone", "")) == kc.normalize_phone(guardian_phone)), guardian_phone)
+        _safe_text(protected, ks.test_ack_text(parent, who))
+        return
     incident = kc.get_incident(incident_id)
     if not incident:
         _safe_text(guardian_phone, "This alert has expired.")
@@ -502,6 +510,37 @@ def log_delivery_failure(status: dict) -> None:
             ExpressionAttributeValues={":e": {"at": kc.now_iso(), "errors": errors[:3]}})
     except Exception as exc:
         print(f"Delivery failure not saved on the user: {exc!r}")
+    # If this was a family alert, tell the protected person, so nobody believes the family was told.
+    alert = kc.recent_alert_to(status.get("recipient_id", ""))
+    if alert and alert.get("protected_phone"):
+        codes = {int(e.get("code") or 0) for e in status.get("errors", []) or []}
+        lang = alert.get("language") or "en"
+        _safe_text(alert["protected_phone"], kc.t("alert_failed_later", lang).format(
+            name=alert.get("guardian_name", ""), reason=_failure_reason(codes, lang)))
+        if not str(alert.get("incident_id", "")).startswith("test-"):
+            try:
+                kc.append_incident_event(alert["incident_id"], f"WhatsApp alert to {alert.get('guardian_name')} "
+                                                               f"failed: {'; '.join(errors)}")
+            except Exception as exc:
+                print(f"Incident not updated: {exc!r}")
+
+
+FAILURE_REASONS = {
+    "window": {"en": "they haven't messaged Kavach in the last 24 hours, and the alert template isn't approved yet",
+               "te": "వారు గత 24 గంటల్లో కవచ్‌కు మెసేజ్ చేయలేదు, హెచ్చరిక టెంప్లేట్ ఇంకా ఆమోదం పొందలేదు",
+               "hi": "उन्होंने पिछले 24 घंटों में कवच को मैसेज नहीं किया, और अलर्ट टेम्पलेट अभी मंज़ूर नहीं हुआ"},
+    "template": {"en": "Kavach's alert template isn't set up correctly", "te": "కవచ్ హెచ్చరిక టెంప్లేట్ సరిగా సెట్ కాలేదు",
+                 "hi": "कवच का अलर्ट टेम्पलेट ठीक से सेट नहीं है"},
+    "number": {"en": "that number can't receive WhatsApp messages", "te": "ఆ నంబర్‌కు WhatsApp మెసేజ్‌లు అందవు",
+               "hi": "उस नंबर पर WhatsApp मैसेज नहीं पहुँचते"},
+    "other": {"en": "WhatsApp refused it", "te": "WhatsApp దాన్ని తిరస్కరించింది", "hi": "WhatsApp ने इसे रोक दिया"},
+}
+
+
+def _failure_reason(codes: set, lang: str) -> str:
+    kind = ("window" if 131047 in codes else "template" if any(132000 <= c < 133000 for c in codes)
+            else "number" if codes & {131026, 131030} else "other")
+    return FAILURE_REASONS[kind].get(lang) or FAILURE_REASONS[kind]["en"]
 
 
 def _is_forwarded(message: dict) -> bool:

@@ -205,3 +205,38 @@ def danger_now(prompt: str, evidence: dict, final: str, reply: str, guardians: l
     if names and any(n.lower() in (reply or "").lower() for n in names) and re.search(_ALERT_CLAIM, (reply or "").lower()):
         return "may be talking to a scammer right now"
     return None
+
+
+# ----------------------------------------------------------------------------- reply language
+
+_SCRIPT = {"te": r"[\u0C00-\u0C7F]", "hi": r"[\u0900-\u097F]"}
+
+
+def language_line(lang: str) -> str:
+    from prompts import LANGUAGE_NAMES
+    name = LANGUAGE_NAMES.get(lang or "en", LANGUAGE_NAMES["en"])
+    return (f"REPLY LANGUAGE: {name}. The person chose this in Kavach's settings. Use it even if the message, "
+            "earlier replies or remembered preferences are in another language.")
+
+
+def wrong_language(reply: str, lang: str) -> bool:
+    """True when the reply is clearly not in the person's chosen script (links and names don't count)."""
+    text = re.sub(r"https?://\S+|\b[\w.-]+@\w+\b|\b[\w-]+\.(?:com|in|xyz|top|org|net)\S*", " ", reply or "")
+    te = len(re.findall(_SCRIPT["te"], text))
+    hi = len(re.findall(_SCRIPT["hi"], text))
+    latin = len(re.findall(r"[A-Za-z]", text))
+    total = te + hi + latin
+    if total < 40:
+        return False
+    if lang == "te":
+        return te / total < 0.3
+    if lang == "hi":
+        return hi / total < 0.3
+    return (te + hi) / total > 0.3
+
+
+def language_correction(lang: str) -> str:
+    from prompts import LANGUAGE_NAMES
+    name = LANGUAGE_NAMES.get(lang or "en", LANGUAGE_NAMES["en"])
+    return (f"KAVACH CHECK: your reply is not in {name}, the language this person chose. Rewrite the same reply "
+            f"in {name}: the same verdict, reasons and steps, nothing added. Reply with the rewritten message only.")

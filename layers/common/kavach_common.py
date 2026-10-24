@@ -119,6 +119,16 @@ STRINGS = {
         "hi": "👨‍👩‍👧 मैंने {names} को अलर्ट भेज दिया है। वे आपको कॉल करेंगे।",
         "en": "👨‍👩‍👧 I have alerted {names}. They will call you.",
     },
+    "family_not_reached": {
+        "te": "⚠️ {names}కు WhatsApp హెచ్చరిక చేరలేదు. దయచేసి మీరే వారికి కాల్ చేయండి.",
+        "hi": "⚠️ {names} तक WhatsApp अलर्ट नहीं पहुँचा। कृपया आप ख़ुद उन्हें कॉल करें।",
+        "en": "⚠️ I couldn't reach {names} on WhatsApp. Please call them yourself.",
+    },
+    "alert_failed_later": {
+        "te": "⚠️ {name}కు పంపిన హెచ్చరిక WhatsApp ద్వారా చేరలేదు ({reason}). దయచేసి మీరే {name}కు కాల్ చేయండి.",
+        "hi": "⚠️ {name} को भेजा गया अलर्ट WhatsApp पर नहीं पहुँचा ({reason})। कृपया आप ख़ुद {name} को कॉल करें।",
+        "en": "⚠️ The alert to {name} didn't reach them on WhatsApp ({reason}). Please call {name} yourself.",
+    },
     "no_family": {
         "te": "👨‍👩‍👧 ప్రమాదంలో హెచ్చరించడానికి కుటుంబ సభ్యులు ఎవరూ లేరు. MENU పంపి 'కుటుంబ సభ్యుడిని చేర్చు' నొక్కండి.",
         "hi": "👨‍👩‍👧 ख़तरे में अलर्ट पाने के लिए कोई परिवार सदस्य नहीं जुड़ा है। MENU भेजकर 'परिवार का सदस्य जोड़ें' चुनें।",
@@ -274,21 +284,62 @@ def alert_guardians(user: dict, incident_id: str, summary: str,
                    buttons, header="Kavach family alert")
 
     sent = []
+    LAST_ALERT_RESULTS.clear()
     for g in (guardians if guardians is not None else user.get("guardians", [])):
         phone = normalize_phone(g.get("phone", ""))
         if not phone:
             continue
         ways = [("message", by_message), ("template", by_template)] if in_window(phone) else \
                [("template", by_template), ("message", by_message)]
+        result = {"name": g.get("name") or phone, "phone": phone, "ok": False, "how": None, "error": None}
         for how, send in ways:
             try:
                 send(phone)
                 print(f"Family alert {incident_id} sent to {phone} as a {how}")
+                result.update(ok=True, how=how, error=None)
                 sent.append(phone)
+                _remember_alert(phone, g.get("name") or phone, user, incident_id)
                 break
             except Exception as exc:
                 print(f"Family alert {incident_id} to {phone} as a {how} failed: {exc!r}")
+                result["error"] = _short_error(exc)
+        LAST_ALERT_RESULTS.append(result)
     return sent
+
+
+# What the last alert_guardians call did for each guardian: [{"name", "phone", "ok", "how", "error"}]
+LAST_ALERT_RESULTS: list[dict] = []
+
+
+def _short_error(exc: Exception) -> str:
+    text = str(exc)
+    m = re.search(r"\(([A-Za-z]+Exception)\).*?: (.*)", text)
+    return (f"{m.group(1)}: {m.group(2)}" if m else f"{type(exc).__name__}: {text}")[:160]
+
+
+def _remember_alert(guardian_phone: str, guardian_name: str, user: dict, incident_id: str) -> None:
+    """So a delivery failure Meta reports later (to the inbound Lambda) can be told to the protected person."""
+    try:
+        table("dedupe_table").put_item(Item={
+            "message_id": f"alert-to#{normalize_phone(guardian_phone)}", "guardian_name": guardian_name,
+            "protected_phone": normalize_phone(user.get("phone", "")), "incident_id": incident_id,
+            "language": user.get("language") or "en", "expires_at": int(time.time()) + 2 * 3600})
+    except Exception as exc:
+        print(f"Alert not remembered for delivery checks: {exc!r}")
+
+
+def recent_alert_to(phone: str) -> dict | None:
+    """The alert sent to this number in the last 2 hours, if any (and forget it, so it is reported once)."""
+    try:
+        key = {"message_id": f"alert-to#{normalize_phone(phone)}"}
+        item = table("dedupe_table").get_item(Key=key).get("Item")
+        if not item or int(item.get("expires_at", 0)) < time.time():
+            return None
+        table("dedupe_table").delete_item(Key=key)
+        return to_jsonable(item)
+    except Exception as exc:
+        print(f"Recent alert lookup failed: {exc!r}")
+        return None
 
 
 def wa_mark_read(message_id: str) -> None:

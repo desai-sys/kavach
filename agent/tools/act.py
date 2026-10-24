@@ -42,7 +42,15 @@ def alert_family(severity: str, what_is_happening: str, what_family_should_do: s
     incident_id = req.ensure_incident("family_alert", severity=severity, summary=what_is_happening,
                                       family_status="alerted")
     sent = kc.alert_guardians(user, incident_id, what_is_happening)
-    kc.append_incident_event(incident_id, f"Family alerted ({severity}): {', '.join(sent) or 'none'}")
+    results = [dict(r) for r in kc.LAST_ALERT_RESULTS]
+    failed = [f"{r['name']}: {r['error']}" for r in results if not r["ok"]]
+    kc.append_incident_event(incident_id, f"Family alerted ({severity}): {', '.join(sent) or 'none'}"
+                             + (f"; failed: {'; '.join(failed)}" if failed else ""))
+    if failed:
+        try:
+            kc.update_incident(incident_id, family_alert_errors=failed[:5])
+        except Exception as exc:
+            print(f"Alert errors not saved: {exc!r}")
 
     emails = [g["email"] for g in guardians if g.get("email")]
     if emails:
@@ -62,8 +70,14 @@ def alert_family(severity: str, what_is_happening: str, what_family_should_do: s
     kc.schedule_once(f"kavach-esc-{incident_id}", FAMILY_ESCALATION_MINUTES,
                      {"kind": "family_escalation", "incident_id": incident_id, "step": 1})
     req.actions.append("family_alerted")
-    return json.dumps({"alerted": sent, "emailed": emails, "incident_id": incident_id,
-                       "auto_escalation_in_minutes": FAMILY_ESCALATION_MINUTES})
+    reached = [g.get("name") or g["phone"] for g in guardians if kc.normalize_phone(g.get("phone", "")) in sent]
+    missed = [g.get("name") or g["phone"] for g in guardians
+              if g.get("phone") and kc.normalize_phone(g["phone"]) not in sent]
+    return json.dumps({"alerted": sent, "alerted_names": reached, "not_reached_on_whatsapp": missed,
+                       "emailed": emails, "incident_id": incident_id,
+                       "auto_escalation_in_minutes": FAMILY_ESCALATION_MINUTES,
+                       "note": "Only say the family was told if 'alerted' lists them. If someone was not reached, "
+                               "tell the person to call that family member themselves."}, ensure_ascii=False)
 
 
 @tool

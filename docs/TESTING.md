@@ -50,7 +50,8 @@ or just type the language:
 ```text
 English
 ```
-Expect: "✅ Language changed to English." Kavach stays on: no consent question again. If you changed it by tapping,
+Expect: "✅ Language changed to English." Kavach stays on: no consent question again, and every later reply,
+including scam checks, comes in English (Kavach rewrites a reply that comes back in the old language). If you changed it by tapping,
 the settings menu comes back in the new language (use that one, not the older menu above it). `తెలుగు` switches
 back.
 
@@ -217,6 +218,12 @@ Family alerts are only for danger happening **now**, described in the person's o
 being asked to install a screen-sharing app or to pay an "official", or money already sent (section 6). A
 forwarded scam text she hasn't acted on gets a 🚨 reply but no family alert.
 
+**E0. Test alert first.** Send `MENU`, tap **Family contacts**, then **🔔 Send a test alert**.
+Expect, on Amma's phone: "🔔 Test alert:" with ✅ or ❌ (and WhatsApp's reason) for each family member. Each family
+member gets a Kavach alert marked as a test; when they tap a button, Amma gets "✅ Ravi received the test alert".
+If WhatsApp rejects it a few seconds later (for example the family member hasn't messaged Kavach in 24 hours and
+the template isn't approved), Amma gets "⚠️ The alert to Ravi didn't reach them…" with the reason.
+
 **E1. Danger right now.** First send `hi` from Ravi's phone (this opens WhatsApp's 24-hour window, so Ravi gets a
 normal message with buttons even if the alert template isn't approved). Then, from Amma's phone, send D3 as a
 voice note, or type:
@@ -224,7 +231,8 @@ voice note, or type:
 I am on a video call with CBI officers now. They say my Aadhaar is in a money laundering case and I must transfer money for verification.
 ```
 Expect:
-- Amma: "hang up now" and "👨‍👩‍👧 I have alerted Ravi. They will call you."
+- Amma: "hang up now" and "👨‍👩‍👧 I have alerted Ravi. They will call you." If WhatsApp refused it, she is
+  told so instead ("⚠️ I couldn't reach Ravi on WhatsApp. Please call them yourself.").
 - Ravi: a 🚨 Kavach alert with **I'm calling now** / **I've reached them**, plus an email (only if Ravi's email is
   verified in SES while SES is in sandbox mode).
 - Ravi taps **I'm calling now** → Amma gets "Ravi has seen the alert and is calling you now", and Ravi gets an

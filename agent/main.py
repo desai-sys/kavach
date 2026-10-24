@@ -93,7 +93,8 @@ def invoke(payload: dict, context=None) -> dict:
     req.evidence = evidence
     floor = evidence.get("verdict_floor")
     business = evidence.get("business_check")
-    prompt_with_sheet = f"{prompt}\n\nEVIDENCE SHEET (Kavach's own checks, run before you):\n{guard.sheet_for_model(evidence)}"
+    prompt_with_sheet = (f"{prompt}\n\nEVIDENCE SHEET (Kavach's own checks, run before you):\n"
+                         f"{guard.sheet_for_model(evidence)}\n\n{guard.language_line(req.language)}")
 
     digits = kc.phone_digits(user["phone"]) or "anonymous"
     session_id = (getattr(context, "session_id", None) or payload.get("session_id")
@@ -125,6 +126,17 @@ def invoke(payload: dict, context=None) -> dict:
             if bad:
                 reply = guard.scrub(reply, bad)
                 checks["removed_contacts"] = bad
+
+        # 3a. Language: the person's chosen language wins over memory and over the language of the message.
+        if guard.wrong_language(reply, req.language):
+            log.info("Guard correction: reply not in %s", req.language)
+            checks["language_fixed"] = True
+            fixed = _clean(str(agent(guard.language_correction(req.language))))
+            if not guard.wrong_language(fixed, req.language):
+                reply = fixed
+            elif floor:
+                reply = guard.fallback_reply(req.language, floor)
+                checks["fallback_used"] = True
     except Exception as exc:
         log.exception("Agent failed")
         req.actions.append(f"error:{type(exc).__name__}")
@@ -229,11 +241,13 @@ def _alert_family_now(req, why: str, reply: str) -> str:
     except Exception:
         log.exception("Family alert from code failed")
         return reply
-    if not out.get("alerted") and not out.get("emailed"):
-        return reply
-    if any(n and n.lower() in reply.lower() for n in names):
-        return reply  # the reply already names them
-    return reply + "\n\n" + kc.t("family_alerted", req.language).format(names=", ".join(names))
+    reached, missed = out.get("alerted_names") or [], out.get("not_reached_on_whatsapp") or []
+    lines = []
+    if reached and not any(n.lower() in reply.lower() for n in reached):
+        lines.append(kc.t("family_alerted", req.language).format(names=", ".join(reached)))
+    if missed:  # never let her think someone was told when WhatsApp refused it
+        lines.append(kc.t("family_not_reached", req.language).format(names=", ".join(missed)))
+    return reply + ("\n\n" + "\n".join(lines) if lines else "")
 
 
 def _clean(text: str) -> str:

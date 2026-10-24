@@ -188,3 +188,56 @@ def test_inbound_message_opens_the_window(monkeypatch):
     monkeypatch.setattr(kc, "table", lambda key: Users())
     kc.touch_inbound(user)
     assert saved and user["last_inbound_at"] == saved[0] and saved[0] > time.time() - 5
+
+
+# ----------------------------------------------------------------------------- reply language
+
+def test_wrong_language_is_detected():
+    te = "🚨 *ఇది మోసం*\n• ఈ లింక్ SBI వెబ్‌సైట్ కాదు: https://sbi-kyc-update.xyz/login\n1. లింక్ తెరవకండి."
+    en = "🚨 *This is a scam*\n• The link is not SBI's website: https://sbi-kyc-update.xyz/login\n1. Don't open it."
+    assert guard.wrong_language(te, "en") and not guard.wrong_language(te, "te")
+    assert guard.wrong_language(en, "te") and not guard.wrong_language(en, "en")
+    assert not guard.wrong_language("✅ OK", "te")  # too short to judge
+
+
+def test_reply_in_the_old_language_is_rewritten(monkeypatch, world):
+    replies = ["🚨 *ఇది మోసం*\n• ఈ లింక్ SBI వెబ్‌సైట్ కాదు.\n1. లింక్ తెరవకండి. 2. మెసేజ్ డిలీట్ చేయండి.",
+               "🚨 *This is a scam*\n• The link is not SBI's website.\n1. Don't open the link. 2. Delete the message."]
+    prompts = []
+
+    class Agent:
+        messages = []
+
+        def __call__(self, prompt):
+            prompts.append(prompt)
+            return replies.pop(0)
+
+    monkeypatch.setattr(main, "make_agent", lambda *_a: Agent())
+    out = main.invoke({"prompt": "User's message:\nDear SBI customer, your YONO account will be blocked today. "
+                                 "Update your PAN now: https://sbi-kyc-update.xyz/login",
+                       "user": dict(USER, language="en"), "message_id": "m1"})
+    assert "REPLY LANGUAGE: simple English" in prompts[0]
+    assert "Rewrite the same reply in simple English" in prompts[1]
+    assert out["reply"].startswith("🚨 *This is a scam*") and out["checks"]["language_fixed"]
+
+
+def test_late_delivery_failure_of_an_alert_is_told_to_her(monkeypatch):
+    import app
+
+    texts = []
+    monkeypatch.setattr(kc, "table", lambda key: type("T", (), {"update_item": lambda self, **kw: None})())
+    monkeypatch.setattr(kc, "recent_alert_to", lambda phone: {
+        "protected_phone": PHONE, "guardian_name": "Ravi", "incident_id": "inc-1", "language": "en"})
+    monkeypatch.setattr(kc, "append_incident_event", lambda *a: None)
+    monkeypatch.setattr(kc, "wa_text", lambda to, body: texts.append((to, body)))
+    app.log_delivery_failure({"id": "wamid.X", "status": "failed", "recipient_id": "919800000002",
+                              "errors": [{"code": 131047, "title": "Re-engagement message"}]})
+    assert texts == [(PHONE, "⚠️ The alert to Ravi didn't reach them on WhatsApp (they haven't messaged Kavach in "
+                             "the last 24 hours, and the alert template isn't approved yet). Please call Ravi yourself.")]
+
+
+def test_alert_that_reaches_nobody_says_so(monkeypatch, world):
+    monkeypatch.setattr(kc, "alert_guardians", lambda *a, **k: [])
+    out = run(monkeypatch, "🚨 *Scam*", "User's message:\nI am on a video call with CBI now, they want money",
+              user=dict(USER, language="en"))
+    assert "I couldn't reach Ravi on WhatsApp. Please call them yourself." in out["reply"]

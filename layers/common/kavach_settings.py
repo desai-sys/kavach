@@ -20,7 +20,7 @@ LANG_NAMES = {"te": "తెలుగు", "hi": "हिन्दी", "en": "Eng
 LANG_BUTTONS = [("LANG|te", "తెలుగు"), ("LANG|hi", "हिन्दी"), ("LANG|en", "English")]
 LANG_PROMPT = "Choose your language / భాష ఎంచుకోండి / भाषा चुनें"
 AWAIT_SECONDS = 15 * 60
-MAX_FAMILY = 9  # a WhatsApp list has 10 rows; one is "Add family member"
+MAX_FAMILY = 8  # a WhatsApp list has 10 rows; two are "Add family member" and "Send a test alert"
 
 T: dict[str, dict[str, str]] = {
     # ---- menu
@@ -224,6 +224,22 @@ T: dict[str, dict[str, str]] = {
     "thanks": {"en": "🙏 Anytime. Forward me anything that looks suspicious.",
                "te": "🙏 ఎప్పుడైనా సరే. అనుమానంగా అనిపించేది ఏదైనా నాకు ఫార్వర్డ్ చేయండి.",
                "hi": "🙏 कभी भी। जो भी संदिग्ध लगे, मुझे फ़ॉरवर्ड करें।"},
+    "row_test": {"en": "🔔 Send a test alert", "te": "🔔 టెస్ట్ హెచ్చరిక", "hi": "🔔 टेस्ट अलर्ट भेजें"},
+    "row_test_d": {"en": "Check that your family really gets alerts", "te": "కుటుంబానికి హెచ్చరికలు చేరుతున్నాయో చూడండి",
+                   "hi": "देखें कि परिवार तक अलर्ट पहुँचते हैं"},
+    "test_head": {"en": "🔔 Test alert:", "te": "🔔 టెస్ట్ హెచ్చరిక:", "hi": "🔔 टेस्ट अलर्ट:"},
+    "test_ok": {"en": "• {name}: ✅ sent", "te": "• {name}: ✅ పంపాను", "hi": "• {name}: ✅ भेजा"},
+    "test_fail": {"en": "• {name}: ❌ couldn't send ({error})", "te": "• {name}: ❌ పంపలేకపోయాను ({error})",
+                  "hi": "• {name}: ❌ नहीं भेज पाया ({error})"},
+    "test_tail": {"en": "Ask them to tap a button on it. If it hasn't arrived in a minute, ask them to send \"hi\" to "
+                        "Kavach once, then try again.",
+                  "te": "దానిపై ఒక బటన్ నొక్కమని వారికి చెప్పండి. ఒక నిమిషంలో రాకపోతే, వారిని ఒకసారి కవచ్‌కు \"hi\" "
+                        "పంపమని చెప్పి, మళ్ళీ ప్రయత్నించండి.",
+                  "hi": "उनसे उस पर एक बटन दबाने को कहें। एक मिनट में न पहुँचे तो उनसे कवच को एक बार \"hi\" भेजने को "
+                        "कहें, फिर दोबारा कोशिश करें।"},
+    "test_ack": {"en": "✅ {name} received the test alert. Family alerts are working.",
+                 "te": "✅ {name}కు టెస్ట్ హెచ్చరిక అందింది. కుటుంబ హెచ్చరికలు పని చేస్తున్నాయి.",
+                 "hi": "✅ {name} को टेस्ट अलर्ट मिल गया। परिवार अलर्ट काम कर रहे हैं।"},
     "btn_add_family": {"en": "Add family member", "te": "కుటుంబాన్ని చేర్చు", "hi": "परिवार जोड़ें"},
     "btn_settings": {"en": "Settings", "te": "సెట్టింగ్స్", "hi": "सेटिंग्स"},
 }
@@ -391,6 +407,8 @@ def family_list(user: dict) -> dict:
              "description": " · ".join(x for x in (pretty_phone(g.get("phone", "")), g.get("email", "")) if x)}
             for g in user.get("guardians", [])[:MAX_FAMILY]]
     rows.append({"id": "SET|add", "title": "➕ " + _t("row_add", lang)[:22], "description": _t("row_add_d", lang)})
+    if user.get("guardians"):
+        rows.append({"id": "SET|testalert", "title": _t("row_test", lang), "description": _t("row_test_d", lang)})
     return {"body": _t("family_body", lang), "button": _t("family_button", lang), "header": None,
             "sections": [{"title": _t("row_family", lang), "rows": rows}]}
 
@@ -580,6 +598,27 @@ def save_district(user: dict, name: str) -> None:
     kc.wa_text(user["phone"], _t("district_saved", _lang(user), d=user["district"]))
 
 
+def send_test_alert(user: dict) -> None:
+    """Send every family member a real alert marked as a test, and tell the person what happened to each."""
+    lang = _lang(user)
+    if not user.get("guardians"):
+        ask_family(user)
+        return
+    kc.alert_guardians(user, f"test-{kc.phone_digits(user['phone'])}",
+                       "is testing Kavach's family alerts. Nothing is wrong")
+    lines = [_t("test_head", lang)]
+    for r in kc.LAST_ALERT_RESULTS:
+        name = f"{r['name']} ({pretty_phone(r['phone'])})"
+        lines.append(_t("test_ok", lang, name=name) if r["ok"] else
+                     _t("test_fail", lang, name=name, error=r.get("error") or "?"))
+    lines.append(_t("test_tail", lang))
+    kc.wa_text(user["phone"], "\n".join(lines))
+
+
+def test_ack_text(user: dict, guardian_name: str) -> str:
+    return _t("test_ack", _lang(user), name=guardian_name)
+
+
 # =========================================================================== entry points (inbound Lambda)
 
 def handle_text(user: dict, text: str, forwarded: bool = False) -> bool:
@@ -727,6 +766,8 @@ def handle_tap(user: dict, choice: str) -> dict:
                 "" if user["guardians"] else "\n" + _t("none_left", lang)))
     elif action == "keep":
         kc.wa_text(phone, _t("no_change", lang))
+    elif action == "testalert":
+        send_test_alert(user)
     elif action in ("addyes", "addno", "checknum"):
         pending = _live(user.get("pending_guardian"))
         if not pending:
