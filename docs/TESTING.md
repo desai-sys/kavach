@@ -473,6 +473,42 @@ timings. Tools still act for real.
 
 ---
 
+## 12. SOS: HELP sends the family an alert, then your location
+
+Works any time the person has agreed to Kavach, even while paused. A typed `HELP`, `SOS`, `panic`, `please help
+me`, `బచావో`, `కాపాడండి`, `నాకు సహాయం కావాలి`, `मदद करो` or `बचाओ` (on its own, not forwarded) is an SOS. Longer
+messages such as "help me check this link" still go to the scam check. For settings, use `MENU`.
+
+**K1. SOS**
+```text
+HELP
+```
+Expect, within seconds (no AI step):
+- Amma: "🆘 I've alerted Ravi, Shikha. They'll call you. If you're in danger right now, call 112" with an **I'm safe
+  now** button, then WhatsApp's **Send location** button.
+- Each family member: a 🚨 alert ("Lakshmi Amma pressed SOS on Kavach and needs help now") with **I'm calling now** /
+  **I've reached them**, and an email. Family who messaged Kavach in the last 24 hours get a normal message;
+  others get the approved template.
+- If nobody taps **I'm calling now**: a second alert at 5 minutes and an email at 10 minutes, as for any alert.
+
+**K2. Share the location.** Tap **Send location** → **Send your current location**.
+Expect: Amma gets "📍 Sent your location to Ravi, Shikha." Family inside the 24-hour window get a map pin; every
+family member gets an alert with a Google Maps link, and an email with the link. The 5-minute re-alert repeats it.
+Live location can't reach WhatsApp business accounts: if you share live location, Kavach explains how to send the
+current location instead.
+
+**K3. I'm safe now.** Tap **I'm safe now**.
+Expect: the family get "Lakshmi Amma says they are safe now. The SOS is cancelled", and the 5-minute escalation
+stops.
+
+**K4. A location without SOS:** share your location at any other time.
+Expect: "Send this location to your family?" with **Send to family** / **No**.
+
+**K5. In her own words:** `Someone is following me on the road, I am scared` goes to the agent, which starts the
+same SOS (alert, location request, I'm safe now) and replies calmly.
+
+---
+
 ## What Kavach does not do (yet)
 
 - Order on Amazon or Flipkart: there's no ordering API for outside apps. It sends official links instead.

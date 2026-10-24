@@ -1,4 +1,4 @@
-from tools.act import alert_family, record_verdict, start_golden_hour
+from tools.act import alert_family, record_verdict, send_sos, start_golden_hour
 from tools.business import business_action, check_business_records
 from tools.everyday import cancel_appointment, find_appointment_slots, find_product_online, my_appointments
 from tools.investigate import check_domain, check_reputation, inspect_link, search_scam_playbooks
@@ -20,6 +20,7 @@ ALL_TOOLS = [
     open_settings,
     add_family_contact,
     alert_family,
+    send_sos,
     start_golden_hour,
     record_verdict,
 ]

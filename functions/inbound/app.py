@@ -31,6 +31,7 @@ import kavach_clinic as kclinic
 import kavach_common as kc
 import kavach_ops as kops
 import kavach_settings as ks
+import kavach_sos as ksos
 
 AGENT_RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 # The agent can take 30-90 s (vision + browser); default boto3 read timeout is 60 s.
@@ -133,6 +134,19 @@ def process_message(message: dict, profile_name: str | None) -> None:
         handle_ops(phone, user, ops_request, message_id)
         return
 
+    # ---- SOS: "HELP", "SOS", "బచావో", "बचाओ" alerts the family in seconds, no model (works even when paused)
+    forwarded = _is_forwarded(message)
+    consented = bool(user) and user.get("status") in ("active", "stopped")
+    if mtype == "text" and ksos.is_sos(text, forwarded):
+        if consented:
+            ksos.start(user)
+            return
+        _safe_text(phone, "🆘 " + " / ".join(ksos.T["not_set_up"][k][2:] for k in ("en", "te", "hi")))
+    if consented and mtype == "location" and ksos.handle_location(user, message.get("location") or {}):
+        return
+    if consented and mtype == "unsupported" and ksos.handle_unsupported(user, message):
+        return
+
     # ---- onboarding
     if not user:
         kc.put_user({"phone": phone, "name": profile_name or "", "status": "new", "language": "en",
@@ -143,7 +157,6 @@ def process_message(message: dict, profile_name: str | None) -> None:
 
     # ---- settings, any time and in any language: MENU, "change language", "STOP", "add Ravi 98765 43210",
     #      a contact card from the phone book, or the answer to a question Kavach just asked
-    forwarded = _is_forwarded(message)
     if mtype == "contacts" and ks.handle_contacts(user, message.get("contacts")):
         return
     if text and ks.handle_text(user, text, forwarded):
@@ -295,6 +308,11 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
         # Appointment time picked (SLOT|<clinic>|<slot>) or reminder answered (APPT|going|cancel|...).
         # Plain code: the slot is booked with a conditional write, by the sender's own number.
         kclinic.handle_tap(user, choice)
+        return
+
+    if kind == "SOS" and user and user.get("status") in ("active", "stopped"):
+        # "I'm safe now" after an SOS, or sending a shared location to the family
+        ksos.handle_tap(user, choice)
         return
 
     if kind == "SET" and user and user.get("status") in ("active", "stopped"):

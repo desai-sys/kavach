@@ -212,3 +212,27 @@ def _maybe_trigger_wave(scam_type: str, district: str, summary: str) -> None:
         Payload=json.dumps({"district": district, "scam_type": scam_type, "summary": summary,
                             "report_count": len(reports)}).encode(),
     )
+
+
+@tool
+def send_sos(what_is_happening: str) -> str:
+    """Emergency: alert the family NOW and ask the person for their location, which Kavach forwards to the family
+    as soon as they share it. Use when the person says THEY are in physical danger or need urgent help right now
+    (someone threatening or following them, someone forcing their way in, a medical emergency, lost and scared).
+    Not for questions about whether a message is a scam, and never for forwarded messages.
+
+    Args:
+        what_is_happening: One short English phrase that follows the person's name, e.g.
+            "says someone is following them and needs help now".
+    """
+    import kavach_sos as ksos
+
+    req = current()
+    out = ksos.start(dict(req.user), reason=what_is_happening.strip().rstrip(".") or
+                     "pressed SOS on Kavach and needs help now")
+    req.incident_id = req.incident_id or out["incident_id"]
+    req.actions.append("sos_started")
+    return json.dumps({**out, "note": "Kavach has already messaged the person with who was alerted, an \"I'm safe "
+                                      "now\" button and a request for their location. Reply in one or two short "
+                                      "lines: stay calm, call 112 if in danger. Don't repeat the names."},
+                      ensure_ascii=False)

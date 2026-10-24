@@ -286,6 +286,7 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
         - DynamoDBCrudPolicy: {TableName: !Ref IncidentsTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref DedupeTable}  # remembers alerts so late WhatsApp failures are reported
         - DynamoDBReadPolicy: {TableName: !Ref BookingsTable}
         - SSMParameterReadPolicy: {ParameterName: kavach/*}
         - Statement:

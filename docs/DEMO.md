@@ -90,6 +90,10 @@ Tap a time: Amma gets the confirmation and token, Ravi's inbox gets the email, a
 it shares its doctors' timetable with Kavach and takes bookings through it. Today there is one demo clinic in
 Kurnool; more member clinics would be matched by the district Amma set.
 
+**SOS (expect: Ravi's phone gets the alert in seconds, then a map pin)**
+Send `HELP`. Ravi's phone lights up with the SOS alert; Amma taps **Send location**; Ravi gets the pin and a Maps
+link; Amma taps **I'm safe now** and Ravi is told. Good for a 15-second shot after the digital-arrest scene.
+
 **12. Settings in her own words (expect: no commands to type)**
 Send `English`, then `తెలుగు` (language switches, Kavach stays on). Share Ravi's contact card from the phone book
 and tap **Yes, add**. Send `STOP`, then `hi`.

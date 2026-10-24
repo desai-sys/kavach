@@ -182,7 +182,7 @@ def invoke(payload: dict, context=None) -> dict:
 
     # 4b. Family alert in code: if the person's own words show a scam happening to them now and the model
     #     didn't alert the family (or only said it did), Kavach does it, with the 5-minute escalation.
-    if not any(a in req.actions for a in ("family_alerted", "golden_hour_started")):
+    if not any(a in req.actions for a in ("family_alerted", "golden_hour_started", "sos_started")):
         why = guard.danger_now(prompt, evidence, final, reply, user.get("guardians") or [],
                                forwarded="FORWARDED" in prompt)
         if why:

@@ -131,6 +131,17 @@ Kavach's replies never tell people to tap a button that isn't there: the guard r
 lines (buttons and lists arrive with their own instructions), and a request for a doctor always gets the list of
 times (or a **Call me back** button when nothing is free), even if the model forgets to look them up.
 
+## SOS: HELP sends the family an alert, then the location
+
+A typed `HELP`, `SOS`, `panic`, `బచావో` or `बचाओ` alerts every family contact within seconds (plain code in
+`layers/common/kavach_sos.py`, no model in the way), with the usual 5- and 10-minute escalation and an email.
+WhatsApp doesn't let a business read a phone's location, so Kavach sends WhatsApp's own **Send location** button;
+the moment the person shares it, the family get a map pin (inside the 24-hour window) and a Google Maps link in
+the alert (the approved template carries it to everyone else) and email. **I'm safe now** tells the family and
+stops the escalation. Live location can't reach WhatsApp business accounts, so Kavach asks for the current
+location instead. Described in their own words ("someone is following me"), the agent starts the same SOS with
+`send_sos`. The reply always points to 112, India's emergency number.
+
 ## Ops mode: run the deployment from WhatsApp (owner only)
 
 The partner running Kavach can manage it, and their AWS account, from the same WhatsApp number. Messages that
@@ -165,7 +176,7 @@ agent/                    Kavach agent (Strands) for AgentCore Runtime
   shopping.py             official store links from a product in a photo or ad
   ops.py, tools/ops.py    owner-only ops mode: list_instances, aws_spend_this_month, kavach_status, aws_read,
                           request_instance_action
-  tools/act.py            alert_family, start_golden_hour, record_verdict
+  tools/act.py            alert_family, start_golden_hour, send_sos, record_verdict
   playbooks.json          14 Indian scam playbooks with red flags and official facts
   kavach-agent-policy.json  extra IAM permissions for the runtime role
 functions/                Lambda functions (Python 3.12, arm64)
@@ -181,6 +192,7 @@ layers/common/            shared by the Lambda layer and the agent
   kavach_ops.py           ops mode: owner check, Yes/Cancel requests, runs the confirmed EC2 action
   kavach_clinic.py        clinic slots, booking (no double booking), confirmations, reminders
   kavach_settings.py      settings menu, language, family contacts, pause, linked services (plain code)
+  kavach_sos.py           SOS: family alert in seconds, location request, map pin and link, I'm safe now
 tests/                    offline tests for the rules, the guard and the agent flow
 template.yaml             SAM stack for Mumbai
 email-inbound.yaml        optional SAM stack for Singapore

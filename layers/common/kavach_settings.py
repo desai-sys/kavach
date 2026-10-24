@@ -70,7 +70,8 @@ T: dict[str, dict[str, str]] = {
               "• Check messages from your bank, insurer or pharmacy against your real records, if they are "
               "Kavach members.\n"
               "• Book a doctor: \"I have fever since yesterday\".\n"
-              "• Find a product on the official Amazon and Flipkart sites: \"I want to buy a pressure cooker\".",
+              "• Find a product on the official Amazon and Flipkart sites: \"I want to buy a pressure cooker\".\n"
+              "• In an emergency, send *HELP* or *SOS*: your family gets an alert, and your location when you share it.",
         "te": "నేను చేయగలిగేవి:\n"
               "• మెసేజ్, లింక్, స్క్రీన్‌షాట్, PDF లేదా వాయిస్ నోట్ మోసమా కాదా చెప్పడం: నాకు ఫార్వర్డ్ చేయండి.\n"
               "• ఎవరైనా భయపెట్టి డబ్బు అడుగుతుంటే వెంటనే మీ కుటుంబానికి తెలియజేయడం.\n"
@@ -78,7 +79,8 @@ T: dict[str, dict[str, str]] = {
               "• మీ బ్యాంక్, ఇన్సూరెన్స్, ఫార్మసీ కవచ్ సభ్యులైతే, వారి పేరుతో వచ్చిన మెసేజ్‌లను మీ అసలు రికార్డులతో "
               "పోల్చడం.\n"
               "• డాక్టర్ అపాయింట్‌మెంట్: \"నిన్నటి నుంచి జ్వరం ఉంది\".\n"
-              "• అధికారిక Amazon, Flipkart సైట్లలో వస్తువు వెతకడం: \"నాకు ప్రెషర్ కుక్కర్ కొనాలి\".",
+              "• అధికారిక Amazon, Flipkart సైట్లలో వస్తువు వెతకడం: \"నాకు ప్రెషర్ కుక్కర్ కొనాలి\".\n"
+              "• అత్యవసరమైతే *HELP* లేదా *SOS* పంపండి: మీ కుటుంబానికి హెచ్చరిక, మీరు పంపితే మీ లొకేషన్ కూడా వెళ్తాయి.",
         "hi": "मैं ये कर सकता हूँ:\n"
               "• मैसेज, लिंक, स्क्रीनशॉट, PDF या वॉइस नोट धोखा है या नहीं, यह बताना: बस फ़ॉरवर्ड करें।\n"
               "• कोई डराकर पैसे माँगे तो तुरंत आपके परिवार को बताना।\n"
@@ -86,7 +88,8 @@ T: dict[str, dict[str, str]] = {
               "• आपका बैंक, बीमा या फ़ार्मेसी कवच से जुड़ा हो तो उनके नाम से आए मैसेज को आपके असली रिकॉर्ड से "
               "मिलाना।\n"
               "• डॉक्टर अपॉइंटमेंट: \"कल से बुखार है\"।\n"
-              "• आधिकारिक Amazon और Flipkart पर सामान ढूँढना: \"मुझे प्रेशर कुकर खरीदना है\"।",
+              "• आधिकारिक Amazon और Flipkart पर सामान ढूँढना: \"मुझे प्रेशर कुकर खरीदना है\"।\n"
+              "• आपात स्थिति में *HELP* या *SOS* भेजें: परिवार को अलर्ट जाएगा, और आप भेजें तो आपकी लोकेशन भी।",
     },
     # ---- language
     "lang_changed": {"en": "✅ Language changed to English.", "te": "✅ భాష తెలుగుకు మార్చబడింది.",
@@ -212,13 +215,15 @@ T: dict[str, dict[str, str]] = {
     # ---- welcome after consent
     "welcome": {
         "en": "You're protected. 🛡️ Forward me anything that looks suspicious: a message, link, screenshot, PDF or "
-              "voice note.\n\nAdd a family member who should be alerted if you are in danger. Send MENU any time to "
-              "change your language or family contacts, or to pause Kavach.",
+              "voice note.\n\nAdd a family member who should be alerted if you are in danger. In an emergency, send HELP. "
+              "Send MENU any time to change your language or family contacts, or to pause Kavach.",
         "te": "మీకు రక్షణ ప్రారంభమైంది. 🛡️ అనుమానంగా అనిపించే ఏదైనా నాకు ఫార్వర్డ్ చేయండి: మెసేజ్, లింక్, "
               "స్క్రీన్‌షాట్, PDF లేదా వాయిస్ నోట్.\n\nమీకు ప్రమాదం ఉంటే హెచ్చరిక అందుకోవాల్సిన కుటుంబ సభ్యుడిని "
-              "చేర్చండి. భాష, కుటుంబ సభ్యులను మార్చడానికి లేదా కవచ్‌ను ఆపడానికి ఎప్పుడైనా MENU అని పంపండి.",
+              "చేర్చండి. అత్యవసరమైతే HELP అని పంపండి. భాష, కుటుంబ సభ్యులను మార్చడానికి లేదా కవచ్‌ను ఆపడానికి ఎప్పుడైనా "
+              "MENU అని పంపండి.",
         "hi": "आप सुरक्षित हैं। 🛡️ जो भी संदिग्ध लगे, मुझे फ़ॉरवर्ड करें: मैसेज, लिंक, स्क्रीनशॉट, PDF या वॉइस नोट।"
-              "\n\nख़तरे में अलर्ट पाने वाले परिवार के सदस्य को जोड़ें। भाषा या परिवार बदलने, या कवच रोकने के लिए कभी "
+              "\n\nख़तरे में अलर्ट पाने वाले परिवार के सदस्य को जोड़ें। आपात स्थिति में HELP भेजें। भाषा या परिवार बदलने, या "
+              "कवच रोकने के लिए कभी "
               "भी MENU भेजें।",
     },
     "thanks": {"en": "🙏 Anytime. Forward me anything that looks suspicious.",
