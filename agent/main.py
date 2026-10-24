@@ -29,6 +29,7 @@ Flow (evidence first, model second, guard last):
 from __future__ import annotations
 
 import os
+import json
 import re
 import time
 from datetime import datetime
@@ -167,6 +168,14 @@ def invoke(payload: dict, context=None) -> dict:
     except Exception:
         log.exception("Could not save the verdict")
 
+    # 4b. Family alert in code: if the person's own words show a scam happening to them now and the model
+    #     didn't alert the family (or only said it did), Kavach does it, with the 5-minute escalation.
+    if not any(a in req.actions for a in ("family_alerted", "golden_hour_started")):
+        why = guard.danger_now(prompt, evidence, final, reply, user.get("guardians") or [],
+                               forwarded="FORWARDED" in prompt)
+        if why:
+            reply = _alert_family_now(req, why, reply)
+
     # 5. Member business: buttons for the real action, and an anonymous signal back to the business.
     buttons, buttons_text = list(req.buttons or []), req.buttons_text
     if business and not req.list_message and not buttons:
@@ -204,6 +213,27 @@ def invoke(payload: dict, context=None) -> dict:
         "checks": {**checks, "evidence_seconds": evidence.get("seconds"),
                    "total_seconds": round(time.time() - started, 1)},
     }
+
+
+def _alert_family_now(req, why: str, reply: str) -> str:
+    """Run the alert_family tool from code and add one line to the reply saying who was told."""
+    names = [g.get("name") or g.get("phone") for g in req.user.get("guardians") or []]
+    if not names:
+        return reply + "\n\n" + kc.t("no_family", req.language)
+    try:
+        from tools.act import alert_family
+        out = json.loads(alert_family(severity="critical", what_is_happening=why,
+                                      what_family_should_do="Call them now and ask them to hang up. Make sure "
+                                                            "they don't pay or share any OTP."))
+        req.actions.append("family_alerted_by_code")
+    except Exception:
+        log.exception("Family alert from code failed")
+        return reply
+    if not out.get("alerted") and not out.get("emailed"):
+        return reply
+    if any(n and n.lower() in reply.lower() for n in names):
+        return reply  # the reply already names them
+    return reply + "\n\n" + kc.t("family_alerted", req.language).format(names=", ".join(names))
 
 
 def _clean(text: str) -> str:

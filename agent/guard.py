@@ -168,3 +168,40 @@ def strip_button_talk(reply: str) -> str:
 def _is_heading(line: str) -> bool:
     bare = line.strip().strip("*_ ")
     return 0 < len(bare) <= 40 and bare[-1:] in ("?", ":", "：") and not re.match(r"^\d+[.)]", bare)
+
+
+# ----------------------------------------------------------------------------- family alert, in code
+
+# The person speaking about themselves ("they called me", "నాకు కాల్ వచ్చింది", "मुझे कॉल आया"). "we"/"us" are left
+# out: scam texts say "we have registered a case".
+_FIRST_PERSON = r"\b(me|my|i|i'm|im|i am)\b|నాకు|నన్ను|నేను|నా |मुझे|मैं|मेरा|मेरे|मेरी"
+_ALERT_CLAIM = r"inform|alert|told|notified|తెలియజేశ|హెచ్చరిక పంప|సమాచారం ఇచ్చ|बता दिया|सूचित|अलर्ट"
+DANGER_RULES = {
+    "digital_arrest": "may be on a call with someone pretending to be police or CBI (a \"digital arrest\" scam)",
+    "authority_asks_money": "is being asked for money by someone claiming to be an official",
+    "authority_upi": "is being asked to pay an official by UPI, which real officials never do",
+    "remote_access_app": "is being asked to install a screen-sharing app, which lets a scammer see bank OTPs",
+}
+
+
+def danger_now(prompt: str, evidence: dict, final: str, reply: str, guardians: list[dict],
+               forwarded: bool) -> str | None:
+    """What to tell the family when the person's OWN words show a scam happening to them now, else None.
+
+    Kavach alerts the family in code when the model didn't: the person describes a digital arrest, a demand for
+    money by an "official" or a screen-sharing app in their own words, says they are on the call now, or the
+    model's reply already claims the family was told. Forwarded messages and news never trigger it.
+    """
+    if forwarded or final not in ("SCAM", "LIKELY_SCAM"):
+        return None
+    own_words = prompt.lower()
+    if "possible_ongoing_call" in " ".join(evidence.get("suggested_actions") or []):
+        return "may be on a call with a scammer right now"
+    if re.search(_FIRST_PERSON, own_words):
+        for f in evidence.get("red_flags") or []:
+            if f.get("rule") in DANGER_RULES and f.get("severity") in ("high", "critical"):
+                return DANGER_RULES[f["rule"]]
+    names = [g.get("name") for g in guardians if g.get("name")]
+    if names and any(n.lower() in (reply or "").lower() for n in names) and re.search(_ALERT_CLAIM, (reply or "").lower()):
+        return "may be talking to a scammer right now"
+    return None

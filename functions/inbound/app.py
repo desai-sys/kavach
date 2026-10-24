@@ -94,7 +94,10 @@ def handler(event, _context):
                 except Exception as exc:  # never let one message break the batch
                     print(f"ERROR processing {message.get('id')}: {exc!r}")
                     _safe_text(message.get("from"), kc.t("error", None))
-            # value["statuses"] (sent/delivered/read receipts) are ignored on purpose.
+            # Sent/delivered/read receipts are ignored; failures are logged so a missing alert can be traced.
+            for status in value.get("statuses", []) or []:
+                if status.get("status") == "failed":
+                    log_delivery_failure(status)
     return {"ok": True}
 
 
@@ -107,6 +110,8 @@ def process_message(message: dict, profile_name: str | None) -> None:
     phone = kc.normalize_phone(message["from"])
     kc.wa_mark_read(message_id)
     user = kc.get_user(phone)
+    if user:  # opens WhatsApp's 24-hour window: family alerts to this number can be normal messages
+        kc.touch_inbound(user)
     mtype = message.get("type")
 
     # ---- taps on buttons (interactive replies, or quick replies on templates)
@@ -131,7 +136,7 @@ def process_message(message: dict, profile_name: str | None) -> None:
     # ---- onboarding
     if not user:
         kc.put_user({"phone": phone, "name": profile_name or "", "status": "new", "language": "en",
-                     "guardians": [], "created_at": kc.now_iso()})
+                     "guardians": [], "created_at": kc.now_iso(), "last_inbound_at": int(time.time())})
         kc.wa_buttons(phone, "🛡️ Welcome to Kavach. Choose your language / భాష ఎంచుకోండి / भाषा चुनें",
                       LANG_BUTTONS)
         return
@@ -482,6 +487,22 @@ def call_agent(user: dict, prompt: str, media: list[dict], message_id: str, mode
 
 
 # =========================================================================== helpers
+
+def log_delivery_failure(status: dict) -> None:
+    """Meta reports some failures only here, after the send call succeeded: an unapproved or misnamed template
+    (132xxx), a normal message outside the 24-hour window (131047), an unreachable number (131026)."""
+    errors = [f"{e.get('code')} {e.get('title', '')}: {(e.get('error_data') or {}).get('details', '')}".strip()
+              for e in status.get("errors", []) or []]
+    print(f"WHATSAPP DELIVERY FAILED to +{status.get('recipient_id', '?')} (message {status.get('id', '?')}): "
+          + ("; ".join(errors) or "no error details"))
+    try:
+        kc.table("users_table").update_item(
+            Key={"phone": kc.normalize_phone(status.get("recipient_id", ""))},
+            UpdateExpression="SET last_delivery_error = :e", ConditionExpression="attribute_exists(phone)",
+            ExpressionAttributeValues={":e": {"at": kc.now_iso(), "errors": errors[:3]}})
+    except Exception as exc:
+        print(f"Delivery failure not saved on the user: {exc!r}")
+
 
 def _is_forwarded(message: dict) -> bool:
     ctx = message.get("context") or {}

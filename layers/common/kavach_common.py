@@ -114,6 +114,16 @@ def clean_for_dynamo(obj: Any) -> Any:
 # --------------------------------------------------------------------------- language strings
 
 STRINGS = {
+    "family_alerted": {
+        "te": "👨‍👩‍👧 {names}కు హెచ్చరిక పంపాను. వారు మీకు కాల్ చేస్తారు.",
+        "hi": "👨‍👩‍👧 मैंने {names} को अलर्ट भेज दिया है। वे आपको कॉल करेंगे।",
+        "en": "👨‍👩‍👧 I have alerted {names}. They will call you.",
+    },
+    "no_family": {
+        "te": "👨‍👩‍👧 ప్రమాదంలో హెచ్చరించడానికి కుటుంబ సభ్యులు ఎవరూ లేరు. MENU పంపి 'కుటుంబ సభ్యుడిని చేర్చు' నొక్కండి.",
+        "hi": "👨‍👩‍👧 ख़तरे में अलर्ट पाने के लिए कोई परिवार सदस्य नहीं जुड़ा है। MENU भेजकर 'परिवार का सदस्य जोड़ें' चुनें।",
+        "en": "👨‍👩‍👧 No family member is set up to be alerted. Send MENU and choose 'Add family member'.",
+    },
     "checking": {
         "te": "🔍 పరిశీలిస్తున్నాను… ఒక్క నిమిషం.",
         "hi": "🔍 जाँच कर रहा हूँ… एक मिनट।",
@@ -209,9 +219,39 @@ def wa_template(to: str, name: str, language: str, body_params: list[str],
     })
 
 
+WINDOW_SECONDS = 23 * 3600  # WhatsApp's customer-service window is 24 hours; keep a margin
+
+
+def touch_inbound(user: dict) -> None:
+    """Remember when this person last messaged Kavach (opens WhatsApp's 24-hour window for normal messages)."""
+    now = int(time.time())
+    user["last_inbound_at"] = now
+    try:
+        table("users_table").update_item(
+            Key={"phone": normalize_phone(user["phone"])}, UpdateExpression="SET last_inbound_at = :t",
+            ConditionExpression="attribute_exists(phone)", ExpressionAttributeValues={":t": now})
+    except Exception as exc:
+        print(f"last_inbound_at not saved: {exc!r}")
+
+
+def in_window(phone: str) -> bool:
+    """True if this number messaged Kavach in the last ~23 hours, so a normal (non-template) message arrives."""
+    try:
+        item = get_user(phone) or {}
+    except Exception as exc:
+        print(f"Window check failed for {phone}: {exc!r}")
+        return False
+    return int(item.get("last_inbound_at") or 0) >= time.time() - WINDOW_SECONDS
+
+
 def alert_guardians(user: dict, incident_id: str, summary: str,
                     guardians: list[dict] | None = None) -> list[str]:
-    """Send the approved family-alert template to each guardian.
+    """Alert each guardian on WhatsApp with "I'm calling now" / "I've reached them" buttons.
+
+    A guardian who messaged Kavach in the last 24 hours gets a normal message with buttons, which needs no
+    template. Anyone else gets the approved family-alert template (the only message WhatsApp delivers outside
+    that window). If the first way is refused, the other is tried. Delivery failures that Meta reports later
+    are logged by the inbound Lambda ("WHATSAPP DELIVERY FAILED").
 
     Template body: {{1}} = protected person's name, {{2}} = what is happening, {{3}} = their phone.
     Buttons: 0 = "I'm calling now", 1 = "I've reached them" (payloads carry the incident id).
@@ -223,26 +263,31 @@ def alert_guardians(user: dict, incident_id: str, summary: str,
     # v1 body reads "{{1}} {{2}}." (summary continues the name); v2 labels each field,
     # so {{2}} must be a full sentence that starts with the name.
     situation = f"{name} {summary}" if "v2" in template else summary
-    sent = []
     buttons = [(f"ACK|{incident_id}|calling", "I'm calling now"), (f"ACK|{incident_id}|reached", "I've reached them")]
+
+    def by_template(phone):
+        wa_template(phone, template, language, [name, situation, user.get("phone", "")], [b for b, _t in buttons])
+
+    def by_message(phone):
+        wa_buttons(phone, f"🚨 Kavach alert: {name} {summary}.\nTheir number: {user.get('phone', '')}\n"
+                          "Please call them now, then tap a button so Kavach knows someone is helping.",
+                   buttons, header="Kavach family alert")
+
+    sent = []
     for g in (guardians if guardians is not None else user.get("guardians", [])):
-        if not g.get("phone"):
+        phone = normalize_phone(g.get("phone", ""))
+        if not phone:
             continue
-        try:
-            wa_template(g["phone"], template, language,
-                        [name, situation, user.get("phone", "")],
-                        [bid for bid, _title in buttons])
-            sent.append(normalize_phone(g["phone"]))
-        except Exception as exc:
-            # Template not approved yet (or rejected): a normal message with the same buttons still reaches a
-            # guardian who has messaged Kavach in the last 24 hours.
-            print(f"Family alert template to {g.get('phone')} failed ({exc!r}); trying a normal message")
+        ways = [("message", by_message), ("template", by_template)] if in_window(phone) else \
+               [("template", by_template), ("message", by_message)]
+        for how, send in ways:
             try:
-                wa_buttons(g["phone"], f"🚨 Kavach alert: {name} {summary}.\nTheir number: {user.get('phone', '')}\n"
-                                       "Please call them now.", buttons, header="Kavach family alert")
-                sent.append(normalize_phone(g["phone"]))
-            except Exception as exc2:
-                print(f"Family alert to {g.get('phone')} failed: {exc2!r}")
+                send(phone)
+                print(f"Family alert {incident_id} sent to {phone} as a {how}")
+                sent.append(phone)
+                break
+            except Exception as exc:
+                print(f"Family alert {incident_id} to {phone} as a {how} failed: {exc!r}")
     return sent
 
 
@@ -270,9 +315,12 @@ def _chunks(text: str, size: int) -> Iterable[str]:
 
 def email_send(to: list[str], subject: str, html: str, text: str | None = None,
                reply_to: list[str] | None = None) -> str | None:
-    recipients = [a for a in (to or []) if a]
+    recipients = list(dict.fromkeys(a.strip() for a in (to or []) if a and a.strip()))
     if not recipients:
         return None
+    if len(recipients) > 1:  # one by one, so one unverified address (SES sandbox) doesn't block the rest
+        ids = [email_send([r], subject, html, text, reply_to) for r in recipients]
+        return next((i for i in ids if i), None)
     body: dict = {"Html": {"Data": html, "Charset": "UTF-8"}}
     if text:
         body["Text"] = {"Data": text, "Charset": "UTF-8"}
@@ -283,7 +331,11 @@ def email_send(to: list[str], subject: str, html: str, text: str | None = None,
     }
     if reply_to:
         kwargs["ReplyToAddresses"] = reply_to
-    return client("sesv2").send_email(**kwargs).get("MessageId")
+    try:
+        return client("sesv2").send_email(**kwargs).get("MessageId")
+    except Exception as exc:  # e.g. "Email address is not verified" while SES is in sandbox
+        print(f"EMAIL FAILED to {recipients[0]}: {exc!r}")
+        return None
 
 
 def email_shell(title: str, inner_html: str) -> str:

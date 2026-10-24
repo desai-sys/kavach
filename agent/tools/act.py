@@ -36,8 +36,8 @@ def alert_family(severity: str, what_is_happening: str, what_family_should_do: s
     user = req.user
     guardians = user.get("guardians") or []
     if not guardians:
-        return json.dumps({"alerted": [], "note": "No guardians on file. Tell the user to add one with: "
-                                                  "GUARDIAN <name> <phone> <email>"})
+        return json.dumps({"alerted": [], "note": "No family member on file. Tell them to send MENU and choose "
+                                                  "'Add family member'."})
 
     incident_id = req.ensure_incident("family_alert", severity=severity, summary=what_is_happening,
                                       family_status="alerted")

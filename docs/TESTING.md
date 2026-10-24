@@ -213,15 +213,35 @@ Expect: a SCAM verdict: never install apps sent on WhatsApp.
 
 ## 5. Family alert and escalation
 
-**E1. Danger right now.** First send `hi` from Ravi's phone, so WhatsApp's 24-hour window is open even if the alert
-template isn't approved. Then send D3 (or B9) from Amma's phone.
+Family alerts are only for danger happening **now**, described in the person's own words: a "police/CBI" call,
+being asked to install a screen-sharing app or to pay an "official", or money already sent (section 6). A
+forwarded scam text she hasn't acted on gets a 🚨 reply but no family alert.
 
+**E1. Danger right now.** First send `hi` from Ravi's phone (this opens WhatsApp's 24-hour window, so Ravi gets a
+normal message with buttons even if the alert template isn't approved). Then, from Amma's phone, send D3 as a
+voice note, or type:
+```text
+I am on a video call with CBI officers now. They say my Aadhaar is in a money laundering case and I must transfer money for verification.
+```
 Expect:
-- Amma: "hang up now" and "I have informed Ravi".
-- Ravi: a 🚨 Kavach alert with **I'm calling now** / **I've reached them**, plus an email.
-- Ravi taps **I'm calling now** → Amma gets "Ravi has seen the alert and is calling you now".
+- Amma: "hang up now" and "👨‍👩‍👧 I have alerted Ravi. They will call you."
+- Ravi: a 🚨 Kavach alert with **I'm calling now** / **I've reached them**, plus an email (only if Ravi's email is
+  verified in SES while SES is in sandbox mode).
+- Ravi taps **I'm calling now** → Amma gets "Ravi has seen the alert and is calling you now", and Ravi gets an
+  **I've reached them** button.
 - If nobody taps: Ravi is alerted again at **5 minutes**, and gets a final email at **10 minutes**.
 - Ravi taps **I've reached them** → the alert is closed.
+
+If Ravi gets nothing:
+- From the owner's phone, send `aws is kavach healthy?`. The reply lists template approval status and
+  "WhatsApp delivery failures" (for example `131047 Re-engagement message`: Ravi hasn't messaged Kavach in 24
+  hours and the template isn't approved; or `132001`: the template name or language doesn't match).
+- Or search the logs (Git Bash):
+  ```bash
+  MSYS_NO_PATHCONV=1 aws logs filter-log-events --region ap-south-1 --log-group-name /aws/lambda/kavach-inbound \
+    --start-time $(( ($(date +%s) - 3600) * 1000 )) --filter-pattern '"DELIVERY FAILED"' --query 'events[].message'
+  ```
+- If Ravi is the same number as Amma (testing with one phone), the alert arrives in the same chat.
 
 ---
 

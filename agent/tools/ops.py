@@ -75,8 +75,9 @@ def aws_spend_this_month() -> str:
 @tool
 def kavach_status() -> str:
     """Health of the Kavach deployment: WhatsApp template approval status, whether SES can email anyone
-    (production access) or only verified addresses (sandbox), Lambda errors in the last 24 hours, and
-    today's scam checks."""
+    (production access) or only verified addresses (sandbox), Lambda errors in the last 24 hours, today's scam
+    checks and family alerts, and WhatsApp messages Meta failed to deliver (e.g. a template that isn't
+    approved, or a normal message outside the 24-hour window)."""
     out: dict = {}
     try:
         sm = kc.client("socialmessaging")
@@ -124,6 +125,16 @@ def kavach_status() -> str:
                         "golden_hour": sum(1 for r in rows if r.get("golden_hour_status"))}
     except Exception as exc:
         out["today"] = f"unavailable ({type(exc).__name__})"
+    try:  # WhatsApp messages Meta refused after accepting them (logged by the inbound Lambda)
+        since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat(timespec="seconds")
+        failed = [u for u in kc.scan_all("users_table", Attr("last_delivery_error").exists())
+                  if str((u.get("last_delivery_error") or {}).get("at", "")) >= since]
+        out["whatsapp_delivery_failures_24h"] = [
+            {"to": "+" + kc.phone_digits(u["phone"])[:4] + "…" + kc.phone_digits(u["phone"])[-3:],
+             "at": u["last_delivery_error"].get("at"), "errors": u["last_delivery_error"].get("errors")}
+            for u in failed[:10]]
+    except Exception as exc:
+        out["whatsapp_delivery_failures_24h"] = f"unavailable ({type(exc).__name__})"
     return _json(out)
 
 
