@@ -191,7 +191,8 @@ python scripts/seed_demo.py --parent +9198XXXXXXXX --name "Lakshmi Amma" --langu
 ```
 This also gives the parent a demo customer record at each of the five fictional member businesses
 (refresh them any time with `--records-only`). Then message the Kavach number from the parent's phone; try the
-member-business messages in [docs/DEMO.md](docs/DEMO.md). Or test without WhatsApp:
+member-business messages in [docs/DEMO.md](docs/DEMO.md), or every feature with copy-paste test messages in
+[docs/TESTING.md](docs/TESTING.md). Or test without WhatsApp:
 `python scripts/ask_agent.py --arn <ARN> --phone +9198XXXXXXXX "Is this real? Your SBI account will be blocked, update KYC at sbi-kyc-update.xyz"`
 
 ### 5. Optional: forwarded-email checking
