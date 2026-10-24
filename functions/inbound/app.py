@@ -226,7 +226,7 @@ def handle_choice(phone: str, user: dict | None, profile_name: str | None, choic
 
     if kind == "LANG":
         if user and user.get("status") in ("active", "stopped"):  # already agreed: just switch the language
-            ks.set_language(user, rest)
+            ks.set_language(user, rest, show_menu=True)
             return
         user = user or {"phone": phone, "name": profile_name or "", "guardians": [], "created_at": kc.now_iso()}
         user["language"] = rest if rest in ("te", "hi", "en") else "en"

@@ -212,7 +212,9 @@ def test_change_language_midway_keeps_kavach_on(wa):
     wa.send("change language")
     assert [b[0] for b in wa.last()[2]] == ["LANG|te", "LANG|hi", "LANG|en"]
     wa.send(choice="LANG|en")
-    assert wa.last() == ("text", "✅ Language changed to English.", PHONE)
+    kind, body, sections, button, _to = wa.last()  # the menu again, now in English
+    assert kind == "list" and body.startswith("✅ Language changed to English.") and button == "Open settings"
+    assert sections[0]["rows"][0]["description"] == "Now: English"
     assert wa.users[PHONE]["status"] == "active" and wa.users[PHONE]["language"] == "en"
     wa.send("हिंदी")  # typing a language name switches straight away
     assert wa.users[PHONE]["language"] == "hi" and wa.last()[1] == "✅ भाषा हिन्दी कर दी गई।"

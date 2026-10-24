@@ -470,10 +470,18 @@ def _live(item: dict | None) -> dict | None:
     return item if item and int(item.get("until", 0)) >= time.time() else None
 
 
-def set_language(user: dict, lang: str) -> None:
+def set_language(user: dict, lang: str, show_menu: bool = False) -> None:
+    """Switch language. After a tap, the menu is sent again in the new language, so an old menu in the
+    previous language isn't the one left on screen."""
     user["language"] = lang if lang in LANG_NAMES else "en"
     _save(user)
-    kc.wa_text(user["phone"], _t("lang_changed", user["language"]))
+    done = _t("lang_changed", user["language"])
+    if show_menu:
+        lst = menu_list(user)
+        lst["body"] = done + "\n\n" + lst["body"]
+        _send_list(user["phone"], lst)
+    else:
+        kc.wa_text(user["phone"], done)
 
 
 def pause(user: dict) -> None:

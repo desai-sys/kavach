@@ -50,7 +50,9 @@ or just type the language:
 ```text
 English
 ```
-Expect: "✅ Language changed to English." Kavach stays on: no consent question again. `తెలుగు` switches back.
+Expect: "✅ Language changed to English." Kavach stays on: no consent question again. If you changed it by tapping,
+the settings menu comes back in the new language (use that one, not the older menu above it). `తెలుగు` switches
+back.
 
 **A4. Add a family member.** Tap **Add family member** (or send `add family member` / `GUARDIAN`). Kavach asks for
 the contact. Then either:
